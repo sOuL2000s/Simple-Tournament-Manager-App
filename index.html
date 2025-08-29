@@ -524,6 +524,28 @@
             justify-content: flex-start; /* Align rounds to the left */
         }
 
+        /* Multi-Stage Specifics */
+        .multi-stage-container .stage-card {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+        .multi-stage-container .stage-card h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: none;
+            padding-bottom: 0;
+            color: var(--secondary-color);
+        }
+        .multi-stage-container .stage-card .stage-content {
+            margin-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 15px;
+        }
+
         /* --- Round Robin Table --- */
         .round-robin-table {
             width: 100%;
@@ -777,6 +799,21 @@
                         <option value="Tennis">Tennis</option>
                         <option value="Esports">Esports</option>
                         <option value="Chess">Chess</option>
+                        <option value="Volleyball">Volleyball</option>
+                        <option value="Badminton">Badminton</option>
+                        <option value="Table Tennis">Table Tennis</option>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Rugby">Rugby</option>
+                        <option value="Hockey">Hockey</option>
+                        <option value="Baseball">Baseball</option>
+                        <option value="Softball">Softball</option>
+                        <option value="Swimming">Swimming</option>
+                        <option value="Athletics">Athletics</option>
+                        <option value="Boxing">Boxing</option>
+                        <option value="MMA">MMA</option>
+                        <option value="Golf">Golf</option>
+                        <option value="Darts">Darts</option>
+                        <option value="Pool">Pool</option>
                         <option value="Other">Other</option>
                     </select>
                     <select id="tournamentFilterType">
@@ -810,6 +847,21 @@
                                 <option value="Tennis">Tennis</option>
                                 <option value="Esports">Esports</option>
                                 <option value="Chess">Chess</option>
+                                <option value="Volleyball">Volleyball</option>
+                                <option value="Badminton">Badminton</option>
+                                <option value="Table Tennis">Table Tennis</option>
+                                <option value="Cricket">Cricket</option>
+                                <option value="Rugby">Rugby</option>
+                                <option value="Hockey">Hockey</option>
+                                <option value="Baseball">Baseball</option>
+                                <option value="Softball">Softball</option>
+                                <option value="Swimming">Swimming</option>
+                                <option value="Athletics">Athletics</option>
+                                <option value="Boxing">Boxing</option>
+                                <option value="MMA">MMA</option>
+                                <option value="Golf">Golf</option>
+                                <option value="Darts">Darts</option>
+                                <option value="Pool">Pool</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
@@ -820,7 +872,7 @@
                                 <option value="Single Elimination">Single Elimination</option>
                                 <option value="Double Elimination">Double Elimination</option>
                                 <option value="Round Robin">Round Robin</option>
-                                <option value="Multi-Stage">Multi-Stage (Advanced - Manual Stage Management)</option>
+                                <option value="Multi-Stage">Multi-Stage</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -861,6 +913,10 @@
 
                     <div id="roundRobinSettings" class="hidden">
                         <h3>Round Robin Specific Settings</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="rrEnableHomeAway">
+                            <label for="rrEnableHomeAway">Enable Home/Away Games</label>
+                        </div>
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="rrPointsWin">Points for Win</label>
@@ -927,6 +983,7 @@
                         <button id="generateBracketBtn" class="btn btn-secondary hidden">Generate Bracket</button>
                         <button id="generateDoubleEliminationBracketBtn" class="btn btn-secondary hidden">Generate DE Bracket</button>
                         <button id="generateRoundRobinBtn" class="btn btn-secondary hidden">Generate Matches</button>
+                        <button id="manageStagesBtn" class="btn btn-secondary hidden">Manage Stages</button>
                     </div>
                 </div>
                 <div id="participantsList" class="participants-list">
@@ -957,6 +1014,13 @@
                     <h3 style="margin-top: 30px;">Standings</h3>
                     <div id="roundRobinStandings">
                         <p class="no-data">Standings will appear after matches are generated and scores recorded.</p>
+                    </div>
+                </div>
+
+                <div id="multiStageContainer" class="hidden">
+                    <h3>Tournament Stages</h3>
+                    <div id="stagesList">
+                        <p class="no-data">No stages defined. Click "Manage Stages" to add them.</p>
                     </div>
                 </div>
             </section>
@@ -1037,6 +1101,21 @@
                             <option value="Tennis">Tennis</option>
                             <option value="Esports">Esports</option>
                             <option value="Chess">Chess</option>
+                            <option value="Volleyball">Volleyball</option>
+                            <option value="Badminton">Badminton</option>
+                            <option value="Table Tennis">Table Tennis</option>
+                            <option value="Cricket">Cricket</option>
+                            <option value="Rugby">Rugby</option>
+                            <option value="Hockey">Hockey</option>
+                            <option value="Baseball">Baseball</option>
+                            <option value="Softball">Softball</option>
+                            <option value="Swimming">Swimming</option>
+                            <option value="Athletics">Athletics</option>
+                            <option value="Boxing">Boxing</option>
+                            <option value="MMA">MMA</option>
+                            <option value="Golf">Golf</option>
+                            <option value="Darts">Darts</option>
+                            <option value="Pool">Pool</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -1087,6 +1166,10 @@
 
                 <div id="editRoundRobinSettings" class="hidden">
                     <h3>Round Robin Specific Settings</h3>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="editRrEnableHomeAway">
+                        <label for="editRrEnableHomeAway">Enable Home/Away Games</label>
+                    </div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="editRrPointsWin">Points for Win</label>
@@ -1163,7 +1246,8 @@
             <form id="matchDetailsForm">
                 <input type="hidden" id="matchDetailsMatchId">
                 <input type="hidden" id="matchDetailsRoundIndex">
-                <input type="hidden" id="matchDetailsBracketType"> <!-- 'winner' or 'loser' for DE -->
+                <input type="hidden" id="matchDetailsBracketType"> <!-- 'rounds', 'winnerBracket', 'loserBracket', 'grandFinal', 'matches' -->
+                <input type="hidden" id="matchDetailsStageId"> <!-- For multi-stage tournaments -->
 
                 <div class="form-grid">
                     <div class="form-group">
@@ -1217,6 +1301,94 @@
         </div>
     </div>
 
+    <!-- Manage Stages Modal -->
+    <div id="manageStagesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('manageStagesModal')">&times;</span>
+            <h3>Manage Stages</h3>
+            <div id="currentStagesList">
+                <p class="no-data">No stages added yet.</p>
+            </div>
+            <div class="btn-group">
+                <button id="addStageBtn" class="btn btn-primary">Add New Stage</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Stage Modal -->
+    <div id="stageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('stageModal')">&times;</span>
+            <h3 id="stageModalTitle">Add Stage</h3>
+            <form id="stageForm">
+                <input type="hidden" id="stageId">
+                <div class="form-group">
+                    <label for="stageName">Stage Name <span style="color:red">*</span></label>
+                    <input type="text" id="stageName" required>
+                </div>
+                <div class="form-group">
+                    <label for="stageType">Stage Type <span style="color:red">*</span></label>
+                    <select id="stageType" required>
+                        <option value="">Select Type</option>
+                        <option value="Single Elimination">Single Elimination</option>
+                        <option value="Round Robin">Round Robin</option>
+                    </select>
+                </div>
+                <div id="stageRoundRobinSettings" class="hidden">
+                    <h4>Round Robin Specific Settings</h4>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="stageRrEnableHomeAway">
+                        <label for="stageRrEnableHomeAway">Enable Home/Away Games</label>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="stageRrPointsWin">Points for Win</label>
+                            <input type="number" id="stageRrPointsWin" value="3" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stageRrPointsDraw">Points for Draw</label>
+                            <input type="number" id="stageRrPointsDraw" value="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stageRrPointsLoss">Points for Loss</label>
+                            <input type="number" id="stageRrPointsLoss" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stageRrTieBreaker">Tie-breaker Preference</label>
+                            <select id="stageRrTieBreaker">
+                                <option value="Head-to-Head">Head-to-Head</option>
+                                <option value="Score Difference">Score Difference</option>
+                                <option value="Score For">Score For</option>
+                                <option value="Random">Random</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Save Stage</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('stageModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Advance Participants Modal -->
+    <div id="advanceParticipantsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('advanceParticipantsModal')">&times;</span>
+            <h3>Advance Participants to Next Stage</h3>
+            <p>Select participants from the current tournament's overall participant list to add to this stage.</p>
+            <input type="hidden" id="advanceStageId">
+            <div id="availableParticipantsList" class="participants-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius);">
+                <!-- Checkboxes for participants -->
+            </div>
+            <div class="btn-group">
+                <button id="processAdvanceParticipantsBtn" class="btn btn-primary">Add Selected Participants</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal('advanceParticipantsModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Inlined QR Code Generator (qrious.js - simplified for single file) ---
         // This is a very basic, self-contained QR code generator.
@@ -1253,7 +1425,6 @@
                 // Simplified QR code generation (not a full QR library)
                 // This will just draw a simple pattern for demonstration.
                 // A real QR code library would involve complex encoding.
-                // For actual QR code generation, a library like 'qrcode.js' or 'qrious' is needed.
                 // For this single HTML file, we'll draw a placeholder.
                 this.context.fillStyle = this.background;
                 this.context.fillRect(0, 0, this.size, this.size);
@@ -1395,12 +1566,13 @@
                 name, sport, type, startDate, endDate, description,
                 maxParticipants, entryFee, prizePool,
                 status: TOURNAMENT_STATUS.UPCOMING,
-                participants: [],
+                participants: [], // Overall tournament participants
                 rounds: [], // For single elimination
                 winnerBracket: [], // For double elimination
                 loserBracket: [], // For double elimination
                 grandFinal: [], // For double elimination
                 matches: [], // For round robin
+                stages: [], // For multi-stage
                 settings: {
                     setBasedScoring,
                     playerStatsFields
@@ -1408,6 +1580,7 @@
             };
 
             if (type === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                newTournament.settings.enableHomeAway = document.getElementById('rrEnableHomeAway').checked;
                 newTournament.settings.pointsWin = parseInt(document.getElementById('rrPointsWin').value) || 3;
                 newTournament.settings.pointsDraw = parseInt(document.getElementById('rrPointsDraw').value) || 1;
                 newTournament.settings.pointsLoss = parseInt(document.getElementById('rrPointsLoss').value) || 0;
@@ -1489,13 +1662,17 @@
             const statusSelect = document.getElementById('changeTournamentStatus');
             statusSelect.value = tournament.status;
 
-            // Show/hide bracket/round robin sections
+            // Show/hide bracket/round robin/multi-stage sections and buttons
             document.getElementById('bracketSection').classList.add('hidden');
             document.getElementById('doubleEliminationBracketSection').classList.add('hidden');
             document.getElementById('roundRobinMatchesSection').classList.add('hidden');
+            document.getElementById('multiStageContainer').classList.add('hidden');
+
             document.getElementById('generateBracketBtn').classList.add('hidden');
             document.getElementById('generateDoubleEliminationBracketBtn').classList.add('hidden');
             document.getElementById('generateRoundRobinBtn').classList.add('hidden');
+            document.getElementById('manageStagesBtn').classList.add('hidden');
+
 
             if (tournament.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
                 document.getElementById('bracketSection').classList.remove('hidden');
@@ -1511,9 +1688,9 @@
                 renderRoundRobinMatches(tournament);
                 renderRoundRobinStandings(tournament);
             } else if (tournament.type === TOURNAMENT_TYPES.MULTI_STAGE) {
-                document.getElementById('roundRobinMatchesSection').classList.remove('hidden'); // Use RR section for now
-                document.getElementById('roundRobinMatches').innerHTML = '<p class="no-data">Multi-Stage tournaments require manual management of stages. Use participant and match features to track progress.</p>';
-                document.getElementById('roundRobinStandings').innerHTML = '<p class="no-data">Standings for Multi-Stage tournaments are typically calculated per stage.</p>';
+                document.getElementById('multiStageContainer').classList.remove('hidden');
+                document.getElementById('manageStagesBtn').classList.remove('hidden');
+                renderMultiStages(tournament);
             }
 
             renderParticipantsList(tournament);
@@ -1540,6 +1717,7 @@
 
             if (tournament.type === TOURNAMENT_TYPES.ROUND_ROBIN) {
                 document.getElementById('editRoundRobinSettings').classList.remove('hidden');
+                document.getElementById('editRrEnableHomeAway').checked = tournament.settings.enableHomeAway || false;
                 document.getElementById('editRrPointsWin').value = tournament.settings.pointsWin;
                 document.getElementById('editRrPointsDraw').value = tournament.settings.pointsDraw;
                 document.getElementById('editRrPointsLoss').value = tournament.settings.pointsLoss;
@@ -1570,6 +1748,7 @@
 
 
             if (tournament.type === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                tournament.settings.enableHomeAway = document.getElementById('editRrEnableHomeAway').checked;
                 tournament.settings.pointsWin = parseInt(document.getElementById('editRrPointsWin').value) || 3;
                 tournament.settings.pointsDraw = parseInt(document.getElementById('editRrPointsDraw').value) || 1;
                 tournament.settings.pointsLoss = parseInt(document.getElementById('editRrPointsLoss').value) || 0;
@@ -1704,18 +1883,23 @@
         }
 
         function deleteParticipant(participantId) {
-            if (!confirm('Are you sure you want to delete this participant? This will also reset any generated brackets/matches.')) {
+            if (!confirm('Are you sure you want to delete this participant? This will also reset any generated brackets/matches in all stages.')) {
                 return;
             }
             const tournament = tournaments.find(t => t.id === currentTournamentId);
             if (tournament) {
                 tournament.participants = tournament.participants.filter(p => p.id !== participantId);
-                // Reset bracket/matches if participants change
+                // Reset all brackets/matches if participants change
                 tournament.rounds = [];
                 tournament.winnerBracket = [];
                 tournament.loserBracket = [];
                 tournament.grandFinal = [];
                 tournament.matches = [];
+                tournament.stages.forEach(stage => {
+                    stage.participants = stage.participants.filter(pId => pId !== participantId);
+                    stage.matches = [];
+                    stage.rounds = [];
+                });
                 saveData();
                 showAlert('Participant deleted successfully!', 'danger');
                 viewTournamentDetails(currentTournamentId); // Re-render details
@@ -1824,20 +2008,29 @@
         }
 
         // --- Elimination Bracket Logic (Common for SE & DE) ---
-        function generateEliminationBracket(tournament, bracketType = TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
-            if (tournament.participants.length < 2) {
-                showAlert('Need at least 2 participants to generate a bracket.', 'error');
-                return;
+        function generateEliminationBracket(tournament, bracketType, stageId = null) {
+            let participantsInStage;
+            let targetBracket;
+            let confirmMessage;
+
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                if (!stage) return;
+                participantsInStage = tournament.participants.filter(p => stage.participants.includes(p.id));
+                targetBracket = stage.rounds;
+                confirmMessage = `Bracket for stage "${stage.name}" already generated. Regenerating will clear all scores. Continue?`;
+            } else {
+                participantsInStage = tournament.participants;
+                targetBracket = tournament.rounds;
+                if (bracketType === TOURNAMENT_TYPES.DOUBLE_ELIMINATION) {
+                    targetBracket = tournament.winnerBracket;
+                }
+                confirmMessage = 'Bracket already generated. Regenerating will clear all scores. Continue?';
             }
 
-            let targetBracket;
-            let confirmMessage = 'Bracket already generated. Regenerating will clear all scores. Continue?';
-
-            if (bracketType === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
-                targetBracket = tournament.rounds;
-            } else if (bracketType === TOURNAMENT_TYPES.DOUBLE_ELIMINATION) {
-                targetBracket = tournament.winnerBracket; // Start with winner bracket
-                confirmMessage = 'Double Elimination bracket already generated. Regenerating will clear all scores. Continue?';
+            if (participantsInStage.length < 2) {
+                showAlert('Need at least 2 participants to generate a bracket.', 'error');
+                return;
             }
 
             if (targetBracket.length > 0 && !confirm(confirmMessage)) {
@@ -1845,13 +2038,19 @@
             }
 
             // Clear existing brackets
-            tournament.rounds = [];
-            tournament.winnerBracket = [];
-            tournament.loserBracket = [];
-            tournament.grandFinal = [];
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                stage.rounds = [];
+            } else {
+                tournament.rounds = [];
+                tournament.winnerBracket = [];
+                tournament.loserBracket = [];
+                tournament.grandFinal = [];
+            }
+
 
             // Sort participants by seed, then randomly
-            let sortedParticipants = [...tournament.participants].sort((a, b) => {
+            let sortedParticipants = [...participantsInStage].sort((a, b) => {
                 if (a.seed && b.seed) return a.seed - b.seed;
                 if (a.seed) return -1; // Seeded players first
                 if (b.seed) return 1;
@@ -1863,25 +2062,25 @@
             let totalSlots = Math.pow(2, numRounds);
             let byes = totalSlots - numParticipants;
 
-            let currentParticipants = [];
+            let currentParticipantsForPairing = [];
             // Assign byes to highest seeds first
             for (let i = 0; i < byes; i++) {
-                currentParticipants.push({ participant: sortedParticipants[i], bye: true });
+                currentParticipantsForPairing.push({ participant: sortedParticipants[i], bye: true });
             }
             // Add remaining participants
             for (let i = byes; i < numParticipants; i++) {
-                currentParticipants.push({ participant: sortedParticipants[i], bye: false });
+                currentParticipantsForPairing.push({ participant: sortedParticipants[i], bye: false });
             }
 
             // Shuffle the non-bye participants to mix them up, keeping byes at the start
-            const nonByeParticipants = currentParticipants.filter(p => !p.bye).sort(() => Math.random() - 0.5);
-            currentParticipants = currentParticipants.filter(p => p.bye).concat(nonByeParticipants);
+            const nonByeParticipants = currentParticipantsForPairing.filter(p => !p.bye).sort(() => Math.random() - 0.5);
+            currentParticipantsForPairing = currentParticipantsForPairing.filter(p => p.bye).concat(nonByeParticipants);
 
             // Create initial matches for Round 1
             let round1Matches = [];
-            for (let i = 0; i < currentParticipants.length; i += 2) {
-                const p1 = currentParticipants[i]?.participant;
-                const p2 = currentParticipants[i + 1]?.participant;
+            for (let i = 0; i < currentParticipantsForPairing.length; i += 2) {
+                const p1 = currentParticipantsForPairing[i]?.participant;
+                const p2 = currentParticipantsForPairing[i + 1]?.participant;
 
                 if (p1 && p2) {
                     round1Matches.push(createMatchObject(p1.id, p2.id, tournament.settings.playerStatsFields));
@@ -1891,22 +2090,35 @@
             }
 
             if (bracketType === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
-                tournament.rounds.push({ name: 'Round 1', matches: round1Matches });
-                // Subsequent rounds (simplified: just create empty slots for winners)
-                for (let r = 1; r < numRounds; r++) {
-                    let nextRoundMatches = [];
-                    const numMatchesInRound = Math.ceil(round1Matches.length / Math.pow(2, r));
-                    for (let i = 0; i < numMatchesInRound; i++) {
-                        nextRoundMatches.push(createMatchObject(null, null, tournament.settings.playerStatsFields));
+                if (stageId) {
+                    const stage = tournament.stages.find(s => s.id === stageId);
+                    stage.rounds.push({ name: 'Round 1', matches: round1Matches });
+                    for (let r = 1; r < numRounds; r++) {
+                        let nextRoundMatches = [];
+                        const numMatchesInRound = Math.ceil(round1Matches.length / Math.pow(2, r));
+                        for (let i = 0; i < numMatchesInRound; i++) {
+                            nextRoundMatches.push(createMatchObject(null, null, tournament.settings.playerStatsFields));
+                        }
+                        if (nextRoundMatches.length > 0) {
+                            stage.rounds.push({ name: `Round ${r + 1}`, matches: nextRoundMatches });
+                        }
                     }
-                    if (nextRoundMatches.length > 0) {
-                        tournament.rounds.push({ name: `Round ${r + 1}`, matches: nextRoundMatches });
+                } else {
+                    tournament.rounds.push({ name: 'Round 1', matches: round1Matches });
+                    for (let r = 1; r < numRounds; r++) {
+                        let nextRoundMatches = [];
+                        const numMatchesInRound = Math.ceil(round1Matches.length / Math.pow(2, r));
+                        for (let i = 0; i < numMatchesInRound; i++) {
+                            nextRoundMatches.push(createMatchObject(null, null, tournament.settings.playerStatsFields));
+                        }
+                        if (nextRoundMatches.length > 0) {
+                            tournament.rounds.push({ name: `Round ${r + 1}`, matches: nextRoundMatches });
+                        }
                     }
                 }
             } else if (bracketType === TOURNAMENT_TYPES.DOUBLE_ELIMINATION) {
                 tournament.winnerBracket.push({ name: 'Winner\'s Round 1', matches: round1Matches });
 
-                // Create empty rounds for Winner's Bracket
                 for (let r = 1; r < numRounds; r++) {
                     let nextRoundMatches = [];
                     const numMatchesInRound = Math.ceil(round1Matches.length / Math.pow(2, r));
@@ -1918,10 +2130,8 @@
                     }
                 }
 
-                // Initialize Loser's Bracket (will be filled as players lose from WB)
-                // This is a very simplified structure. A full DE bracket has complex LB rounds.
-                // For a single file, we'll just create enough rounds for potential losers.
-                const numLoserRounds = numRounds * 2 - 2; // Approximation
+                // Initialize Loser's Bracket (simplified)
+                const numLoserRounds = numRounds * 2 - 2;
                 for (let r = 0; r < numLoserRounds; r++) {
                     tournament.loserBracket.push({ name: `Loser\'s Round ${r + 1}`, matches: [] });
                 }
@@ -1932,18 +2142,22 @@
 
             saveData();
             showAlert('Bracket generated successfully!');
-            if (bracketType === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
+            if (stageId) {
+                renderMultiStages(tournament);
+            } else if (bracketType === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
                 renderBracket(tournament);
             } else {
                 renderDoubleEliminationBracket(tournament);
             }
         }
 
-        function createMatchObject(player1Id, player2Id, playerStatsFields, winnerId = null, status = 'Upcoming') {
+        function createMatchObject(player1Id, player2Id, playerStatsFields, winnerId = null, status = 'Upcoming', homePlayerId = null, awayPlayerId = null) {
             const match = {
                 id: generateUniqueId(),
                 player1Id,
                 player2Id,
+                homePlayerId: homePlayerId || player1Id, // Default player1 is home
+                awayPlayerId: awayPlayerId || player2Id, // Default player2 is away
                 score1: null,
                 score2: null,
                 sets: null, // For set-based scoring
@@ -1963,58 +2177,28 @@
             return match;
         }
 
-        function renderBracket(tournament) {
-            const bracketVisualizer = document.getElementById('bracketVisualizer');
+        function renderBracket(tournament, targetElementId = 'bracketVisualizer', roundsArray = tournament.rounds, stageId = null) {
+            const bracketVisualizer = document.getElementById(targetElementId);
             bracketVisualizer.innerHTML = '';
 
-            if (tournament.rounds.length === 0) {
+            if (roundsArray.length === 0) {
                 bracketVisualizer.innerHTML = '<p class="no-data">Bracket not generated. Add participants and click "Generate Bracket".</p>';
                 return;
             }
 
-            const bracketWrapper = document.createElement('div');
-            bracketWrapper.className = 'bracket-round-wrapper';
-
-            tournament.rounds.forEach((round, roundIndex) => {
+            roundsArray.forEach((round, roundIndex) => {
                 const roundDiv = document.createElement('div');
                 roundDiv.className = 'bracket-round-simple';
                 roundDiv.innerHTML = `<h4>${round.name}</h4>`;
 
                 round.matches.forEach(match => {
-                    const p1 = tournament.participants.find(p => p.id === match.player1Id);
-                    const p2 = tournament.participants.find(p => p.id === match.player2Id);
-
-                    const scoreInputHtml1 = p1 ? (tournament.settings.setBasedScoring ?
-                        `<input type="text" class="sets-input" value="${match.sets !== null ? match.sets.split('-')[0] : ''}" data-player="1" ${match.status !== 'Upcoming' ? 'disabled' : ''}>` :
-                        `<input type="number" class="score-input" value="${match.score1 !== null ? match.score1 : ''}" data-player="1" ${match.status !== 'Upcoming' ? 'disabled' : ''}>`) : '';
-                    const scoreInputHtml2 = p2 ? (tournament.settings.setBasedScoring ?
-                        `<input type="text" class="sets-input" value="${match.sets !== null ? match.sets.split('-')[1] : ''}" data-player="2" ${match.status !== 'Upcoming' ? 'disabled' : ''}>` :
-                        `<input type="number" class="score-input" value="${match.score2 !== null ? match.score2 : ''}" data-player="2" ${match.status !== 'Upcoming' ? 'disabled' : ''}>`) : '';
-
-                    const matchDiv = document.createElement('div');
-                    matchDiv.className = `bracket-match-simple ${match.winnerId ? 'winner' : ''}`;
-                    matchDiv.innerHTML = `
-                        <div class="player-line ${match.winnerId === p1?.id ? 'winner-player' : ''}">
-                            <span>${p1 ? p1.name : 'BYE'}</span>
-                            ${scoreInputHtml1}
-                        </div>
-                        <div class="player-line ${match.winnerId === p2?.id ? 'winner-player' : ''}">
-                            <span>${p2 ? p2.name : 'BYE'}</span>
-                            ${scoreInputHtml2}
-                        </div>
-                        <div class="match-actions">
-                            <button class="btn btn-outline" onclick="openMatchDetailsModal('${match.id}', ${roundIndex}, 'rounds')">Details</button>
-                            ${match.status === 'Upcoming' ? `<button class="btn btn-primary" onclick="recordEliminationScore('${match.id}', ${roundIndex}, 'rounds')">Record Score</button>` : ''}
-                            ${match.status === 'Completed' ? `<span style="color: var(--primary-color); font-weight: bold;">Winner: ${tournament.participants.find(p => p.id === match.winnerId)?.name || 'N/A'}</span>` : ''}
-                            ${match.status === 'Completed - Bye' ? `<span style="color: var(--secondary-color); font-weight: bold;">BYE - ${p1?.name || 'N/A'} Advances</span>` : ''}
-                        </div>
-                    `;
-                    bracketVisualizer.appendChild(matchDiv);
+                    roundDiv.appendChild(createMatchElementHTML(match, tournament, roundIndex, 'rounds', stageId));
                 });
+                bracketVisualizer.appendChild(roundDiv);
             });
 
             // Check for overall winner
-            const lastRound = tournament.rounds[tournament.rounds.length - 1];
+            const lastRound = roundsArray[roundsArray.length - 1];
             if (lastRound && lastRound.matches.length === 1 && lastRound.matches[0].winnerId) {
                 const winner = tournament.participants.find(p => p.id === lastRound.matches[0].winnerId);
                 bracketVisualizer.insertAdjacentHTML('beforeend', `<h3 class="text-center" style="margin-top: 30px; color: var(--accent-color);">🏆 Tournament Winner: ${winner.name} 🏆</h3>`);
@@ -2040,7 +2224,7 @@
                 roundDiv.className = 'bracket-round-simple';
                 roundDiv.innerHTML = `<h4>${round.name}</h4>`;
                 round.matches.forEach(match => {
-                    roundDiv.appendChild(createMatchElement(match, tournament, roundIndex, 'winnerBracket'));
+                    roundDiv.appendChild(createMatchElementHTML(match, tournament, roundIndex, 'winnerBracket'));
                 });
                 wbVisualizer.appendChild(roundDiv);
             });
@@ -2057,7 +2241,7 @@
                 roundDiv.className = 'bracket-round-simple';
                 roundDiv.innerHTML = `<h4>${round.name}</h4>`;
                 round.matches.forEach(match => {
-                    roundDiv.appendChild(createMatchElement(match, tournament, roundIndex, 'loserBracket'));
+                    roundDiv.appendChild(createMatchElementHTML(match, tournament, roundIndex, 'loserBracket'));
                 });
                 lbVisualizer.appendChild(roundDiv);
             });
@@ -2073,7 +2257,7 @@
                 const roundDiv = document.createElement('div');
                 roundDiv.className = 'bracket-round-simple';
                 round.matches.forEach(match => {
-                    roundDiv.appendChild(createMatchElement(match, tournament, roundIndex, 'grandFinal'));
+                    roundDiv.appendChild(createMatchElementHTML(match, tournament, roundIndex, 'grandFinal'));
                 });
                 gfVisualizer.appendChild(roundDiv);
             });
@@ -2088,7 +2272,7 @@
             }
         }
 
-        function createMatchElement(match, tournament, roundIndex, bracketType) {
+        function createMatchElementHTML(match, tournament, roundIndex, bracketType, stageId = null) {
             const p1 = tournament.participants.find(p => p.id === match.player1Id);
             const p2 = tournament.participants.find(p => p.id === match.player2Id);
 
@@ -2111,8 +2295,8 @@
                     ${scoreInputHtml2}
                 </div>
                 <div class="match-actions">
-                    <button class="btn btn-outline" onclick="openMatchDetailsModal('${match.id}', ${roundIndex}, '${bracketType}')">Details</button>
-                    ${match.status === 'Upcoming' && p1 && p2 ? `<button class="btn btn-primary" onclick="recordEliminationScore('${match.id}', ${roundIndex}, '${bracketType}')">Record Score</button>` : ''}
+                    <button class="btn btn-outline" onclick="openMatchDetailsModal('${match.id}', ${roundIndex}, '${bracketType}', '${stageId || ''}')">Details</button>
+                    ${match.status === 'Upcoming' && p1 && p2 ? `<button class="btn btn-primary" onclick="recordEliminationScore('${match.id}', ${roundIndex}, '${bracketType}', '${stageId || ''}')">Record Score</button>` : ''}
                     ${match.status === 'Completed' ? `<span style="color: var(--primary-color); font-weight: bold;">Winner: ${tournament.participants.find(p => p.id === match.winnerId)?.name || 'N/A'}</span>` : ''}
                     ${match.status === 'Completed - Bye' ? `<span style="color: var(--secondary-color); font-weight: bold;">BYE - ${p1?.name || 'N/A'} Advances</span>` : ''}
                 </div>
@@ -2120,11 +2304,20 @@
             return matchDiv;
         }
 
-        function recordEliminationScore(matchId, roundIndex, bracketType) {
+        function recordEliminationScore(matchId, roundIndex, bracketType, stageId = null) {
             const tournament = tournaments.find(t => t.id === currentTournamentId);
             if (!tournament) return;
 
-            const bracket = tournament[bracketType];
+            let bracket, currentParticipants;
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                bracket = stage.rounds;
+                currentParticipants = tournament.participants.filter(p => stage.participants.includes(p.id));
+            } else {
+                bracket = tournament[bracketType];
+                currentParticipants = tournament.participants;
+            }
+
             const round = bracket[roundIndex];
             const match = round.matches.find(m => m.id === matchId);
             if (!match) return;
@@ -2174,26 +2367,30 @@
 
             // Advance winner and loser
             if (bracketType === 'rounds') { // Single Elimination
-                if (roundIndex < tournament.rounds.length - 1) {
-                    advanceWinner(tournament.rounds[roundIndex + 1].matches, match.winnerId);
+                if (roundIndex < bracket.length - 1) {
+                    advanceWinner(bracket[roundIndex + 1].matches, match.winnerId);
                 }
             } else if (bracketType === 'winnerBracket') { // Double Elimination - Winner's Bracket
                 if (roundIndex < tournament.winnerBracket.length - 1) {
                     advanceWinner(tournament.winnerBracket[roundIndex + 1].matches, match.winnerId);
+                } else { // Winner of WB goes to Grand Final
+                    const grandFinalMatch = tournament.grandFinal[0]?.matches[0];
+                    if (grandFinalMatch) {
+                        grandFinalMatch.player1Id = match.winnerId; // WB winner is P1 in GF
+                    }
                 }
                 // Send loser to Loser's Bracket
                 if (loserId) {
-                    // This is a simplified advancement. Real DE has complex loser bracket pairing.
-                    // For now, just add to the next available slot in LB.
-                    const nextLBRound = tournament.loserBracket[roundIndex * 2]; // Simplified mapping
-                    if (nextLBRound) {
+                    // Simplified: Losers from WB Round N go to LB Round 2N-1 or 2N
+                    const lbRoundIndex = roundIndex * 2; // This is a very simplified mapping
+                    if (tournament.loserBracket[lbRoundIndex]) {
                         let foundSlot = false;
-                        for (const lbMatch of nextLBRound.matches) {
+                        for (const lbMatch of tournament.loserBracket[lbRoundIndex].matches) {
                             if (!lbMatch.player1Id) { lbMatch.player1Id = loserId; foundSlot = true; break; }
                             if (!lbMatch.player2Id) { lbMatch.player2Id = loserId; foundSlot = true; break; }
                         }
                         if (!foundSlot) { // If no existing slot, create one
-                            nextLBRound.matches.push(createMatchObject(loserId, null, tournament.settings.playerStatsFields));
+                            tournament.loserBracket[lbRoundIndex].matches.push(createMatchObject(loserId, null, tournament.settings.playerStatsFields));
                         }
                     } else { // Create new round if needed
                         tournament.loserBracket.push({ name: `Loser's Round ${tournament.loserBracket.length + 1}`, matches: [createMatchObject(loserId, null, tournament.settings.playerStatsFields)] });
@@ -2202,12 +2399,21 @@
             } else if (bracketType === 'loserBracket') { // Double Elimination - Loser's Bracket
                 if (roundIndex < tournament.loserBracket.length - 1) {
                     advanceWinner(tournament.loserBracket[roundIndex + 1].matches, match.winnerId);
+                } else { // Winner of LB goes to Grand Final
+                    const grandFinalMatch = tournament.grandFinal[0]?.matches[0];
+                    if (grandFinalMatch) {
+                        grandFinalMatch.player2Id = match.winnerId; // LB winner is P2 in GF
+                    }
                 }
+            } else if (bracketType === 'grandFinal') {
+                // Grand Final winner is tournament winner
             }
 
             saveData();
-            showAlert(`Score recorded for match. ${tournament.participants.find(p => p.id === match.winnerId)?.name} advances!`);
-            if (bracketType === 'rounds') {
+            showAlert(`Score recorded for match. ${currentParticipants.find(p => p.id === match.winnerId)?.name} advances!`);
+            if (stageId) {
+                renderMultiStages(tournament);
+            } else if (bracketType === 'rounds') {
                 renderBracket(tournament);
             } else {
                 renderDoubleEliminationBracket(tournament);
@@ -2233,22 +2439,40 @@
         }
 
         // --- Match Details Modal ---
-        function openMatchDetailsModal(matchId, roundIndex, bracketType) {
+        function openMatchDetailsModal(matchId, roundIndex, bracketType, stageId = null) {
             const tournament = tournaments.find(t => t.id === currentTournamentId);
             if (!tournament) return;
 
-            const bracket = tournament[bracketType];
-            const round = bracket[roundIndex];
-            const match = round.matches.find(m => m.id === matchId);
+            let match;
+            let participantsForMatch;
+
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                if (bracketType === 'matches') { // RR stage
+                    match = stage.matches.find(m => m.id === matchId);
+                } else { // SE stage
+                    match = stage.rounds[roundIndex].matches.find(m => m.id === matchId);
+                }
+                participantsForMatch = tournament.participants.filter(p => stage.participants.includes(p.id));
+            } else {
+                if (bracketType === 'matches') { // RR tournament
+                    match = tournament.matches.find(m => m.id === matchId);
+                } else { // SE/DE tournament
+                    match = tournament[bracketType][roundIndex].matches.find(m => m.id === matchId);
+                }
+                participantsForMatch = tournament.participants;
+            }
+
             if (!match) return;
 
-            document.getElementById('matchDetailsModalTitle').textContent = `Match: ${tournament.participants.find(p => p.id === match.player1Id)?.name || 'TBD'} vs ${tournament.participants.find(p => p.id === match.player2Id)?.name || 'TBD'}`;
+            document.getElementById('matchDetailsModalTitle').textContent = `Match: ${participantsForMatch.find(p => p.id === match.player1Id)?.name || 'TBD'} vs ${participantsForMatch.find(p => p.id === match.player2Id)?.name || 'TBD'}`;
             document.getElementById('matchDetailsMatchId').value = match.id;
             document.getElementById('matchDetailsRoundIndex').value = roundIndex;
             document.getElementById('matchDetailsBracketType').value = bracketType;
+            document.getElementById('matchDetailsStageId').value = stageId;
 
-            document.getElementById('matchDetailsPlayer1').value = tournament.participants.find(p => p.id === match.player1Id)?.name || 'BYE';
-            document.getElementById('matchDetailsPlayer2').value = tournament.participants.find(p => p.id === match.player2Id)?.name || 'BYE';
+            document.getElementById('matchDetailsPlayer1').value = participantsForMatch.find(p => p.id === match.player1Id)?.name || 'BYE';
+            document.getElementById('matchDetailsPlayer2').value = participantsForMatch.find(p => p.id === match.player2Id)?.name || 'BYE';
             document.getElementById('matchDetailsDate').value = match.date || '';
             document.getElementById('matchDetailsTime').value = match.time || '';
             document.getElementById('matchDetailsVenue').value = match.venue || '';
@@ -2257,8 +2481,8 @@
             // Render player stats inputs
             const player1StatsInputsDiv = document.getElementById('player1StatsInputs');
             const player2StatsInputsDiv = document.getElementById('player2StatsInputs');
-            player1StatsInputsDiv.innerHTML = `<h4>${tournament.participants.find(p => p.id === match.player1Id)?.name || 'Player 1'} Stats</h4>`;
-            player2StatsInputsDiv.innerHTML = `<h4>${tournament.participants.find(p => p.id === match.player2Id)?.name || 'Player 2'} Stats</h4>`;
+            player1StatsInputsDiv.innerHTML = `<h4>${participantsForMatch.find(p => p.id === match.player1Id)?.name || 'Player 1'} Stats</h4>`;
+            player2StatsInputsDiv.innerHTML = `<h4>${participantsForMatch.find(p => p.id === match.player2Id)?.name || 'Player 2'} Stats</h4>`;
 
             tournament.settings.playerStatsFields.forEach(field => {
                 player1StatsInputsDiv.innerHTML += `
@@ -2286,10 +2510,24 @@
             const matchId = document.getElementById('matchDetailsMatchId').value;
             const roundIndex = parseInt(document.getElementById('matchDetailsRoundIndex').value);
             const bracketType = document.getElementById('matchDetailsBracketType').value;
+            const stageId = document.getElementById('matchDetailsStageId').value;
 
-            const bracket = tournament[bracketType];
-            const round = bracket[roundIndex];
-            const match = round.matches.find(m => m.id === matchId);
+            let match;
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                if (bracketType === 'matches') {
+                    match = stage.matches.find(m => m.id === matchId);
+                } else {
+                    match = stage.rounds[roundIndex].matches.find(m => m.id === matchId);
+                }
+            } else {
+                if (bracketType === 'matches') {
+                    match = tournament.matches.find(m => m.id === matchId);
+                } else {
+                    match = tournament[bracketType][roundIndex].matches.find(m => m.id === matchId);
+                }
+            }
+
             if (!match) return;
 
             match.date = document.getElementById('matchDetailsDate').value;
@@ -2306,7 +2544,9 @@
             saveData();
             showAlert('Match details updated successfully!');
             closeModal('matchDetailsModal');
-            if (bracketType === 'rounds') {
+            if (stageId) {
+                renderMultiStages(tournament);
+            } else if (bracketType === 'rounds') {
                 renderBracket(tournament);
             } else if (bracketType === 'winnerBracket' || bracketType === 'loserBracket' || bracketType === 'grandFinal') {
                 renderDoubleEliminationBracket(tournament);
@@ -2317,39 +2557,71 @@
         }
 
         // --- Round Robin Logic ---
-        function generateRoundRobinMatches() {
-            const tournament = tournaments.find(t => t.id === currentTournamentId);
-            if (!tournament) return;
+        function generateRoundRobinMatches(tournament, stageId = null) {
+            let participantsInStage;
+            let matchesArray;
+            let rrSettings;
+            let confirmMessage;
 
-            if (tournament.participants.length < 2) {
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                if (!stage) return;
+                participantsInStage = tournament.participants.filter(p => stage.participants.includes(p.id));
+                matchesArray = stage.matches;
+                rrSettings = stage.settings;
+                confirmMessage = `Matches for stage "${stage.name}" already generated. Regenerating will clear all scores. Continue?`;
+            } else {
+                participantsInStage = tournament.participants;
+                matchesArray = tournament.matches;
+                rrSettings = tournament.settings;
+                confirmMessage = 'Matches already generated. Regenerating will clear all scores. Continue?';
+            }
+
+            if (participantsInStage.length < 2) {
                 showAlert('Need at least 2 participants to generate matches.', 'error');
                 return;
             }
 
-            if (tournament.matches.length > 0 && !confirm('Matches already generated. Regenerating will clear all scores. Continue?')) {
+            if (matchesArray.length > 0 && !confirm(confirmMessage)) {
                 return;
             }
 
-            tournament.matches = [];
-            const participants = tournament.participants;
+            // Clear existing matches
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                stage.matches = [];
+            } else {
+                tournament.matches = [];
+            }
+
+            const participants = participantsInStage;
             const numParticipants = participants.length;
 
             for (let i = 0; i < numParticipants; i++) {
                 for (let j = i + 1; j < numParticipants; j++) {
-                    tournament.matches.push(createMatchObject(participants[i].id, participants[j].id, tournament.settings.playerStatsFields));
+                    // Match 1: P[i] vs P[j] (P[i] is home)
+                    matchesArray.push(createMatchObject(participants[i].id, participants[j].id, tournament.settings.playerStatsFields, null, 'Upcoming', participants[i].id, participants[j].id));
+                    if (rrSettings.enableHomeAway) {
+                        // Match 2: P[j] vs P[i] (P[j] is home)
+                        matchesArray.push(createMatchObject(participants[j].id, participants[i].id, tournament.settings.playerStatsFields, null, 'Upcoming', participants[j].id, participants[i].id));
+                    }
                 }
             }
             saveData();
             showAlert('Round Robin matches generated successfully!');
-            renderRoundRobinMatches(tournament);
-            renderRoundRobinStandings(tournament);
+            if (stageId) {
+                renderMultiStages(tournament);
+            } else {
+                renderRoundRobinMatches(tournament);
+                renderRoundRobinStandings(tournament);
+            }
         }
 
-        function renderRoundRobinMatches(tournament) {
-            const matchesDiv = document.getElementById('roundRobinMatches');
+        function renderRoundRobinMatches(tournament, targetElementId = 'roundRobinMatches', matchesArray = tournament.matches, participantsArray = tournament.participants, rrSettings = tournament.settings, stageId = null) {
+            const matchesDiv = document.getElementById(targetElementId);
             matchesDiv.innerHTML = '';
 
-            if (tournament.matches.length === 0) {
+            if (matchesArray.length === 0) {
                 matchesDiv.innerHTML = '<p class="no-data">Matches not generated. Add participants and click "Generate Matches".</p>';
                 return;
             }
@@ -2360,9 +2632,9 @@
                 <thead>
                     <tr>
                         <th>Match</th>
-                        <th>Player 1</th>
+                        <th>Home Player</th>
                         <th>Score</th>
-                        <th>Player 2</th>
+                        <th>Away Player</th>
                         <th>Status</th>
                         <th>Schedule</th>
                         <th>Actions</th>
@@ -2372,9 +2644,11 @@
             `;
             const tbody = table.querySelector('tbody');
 
-            tournament.matches.forEach(match => {
-                const p1 = tournament.participants.find(p => p.id === match.player1Id);
-                const p2 = tournament.participants.find(p => p.id === match.player2Id);
+            matchesArray.forEach(match => {
+                const p1 = participantsArray.find(p => p.id === match.player1Id);
+                const p2 = participantsArray.find(p => p.id === match.player2Id);
+                const homePlayer = participantsArray.find(p => p.id === match.homePlayerId);
+                const awayPlayer = participantsArray.find(p => p.id === match.awayPlayerId);
 
                 const scoreInputHtml1 = tournament.settings.setBasedScoring ?
                     `<input type="text" class="sets-input" value="${match.sets !== null ? match.sets.split('-')[0] : ''}" data-match-id="${match.id}" data-player="1" ${match.status !== 'Upcoming' ? 'disabled' : ''}>` :
@@ -2385,20 +2659,20 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${p1?.name || 'N/A'} vs ${p2?.name || 'N/A'}</td>
-                    <td>${p1?.name || 'N/A'}</td>
+                    <td>${homePlayer?.name || 'N/A'} vs ${awayPlayer?.name || 'N/A'}</td>
+                    <td>${homePlayer?.name || 'N/A'}</td>
                     <td>
                         ${scoreInputHtml1}
                         -
                         ${scoreInputHtml2}
                     </td>
-                    <td>${p2?.name || 'N/A'}</td>
+                    <td>${awayPlayer?.name || 'N/A'}</td>
                     <td>${match.status}</td>
                     <td>${match.date || 'N/A'} ${match.time || ''}</td>
                     <td>
-                        <button class="btn btn-outline btn-sm" onclick="openMatchDetailsModal('${match.id}', 0, 'matches')">Details</button>
-                        ${match.status === 'Upcoming' ? `<button class="btn btn-primary btn-sm" onclick="recordRoundRobinScore('${match.id}')">Record</button>` : ''}
-                        ${match.status === 'Completed' ? `<span style="color: var(--primary-color); font-weight: bold;">Winner: ${tournament.participants.find(p => p.id === match.winnerId)?.name || 'Draw'}</span>` : ''}
+                        <button class="btn btn-outline btn-sm" onclick="openMatchDetailsModal('${match.id}', 0, 'matches', '${stageId || ''}')">Details</button>
+                        ${match.status === 'Upcoming' ? `<button class="btn btn-primary btn-sm" onclick="recordRoundRobinScore('${match.id}', '${stageId || ''}')">Record</button>` : ''}
+                        ${match.status === 'Completed' ? `<span style="color: var(--primary-color); font-weight: bold;">Winner: ${participantsArray.find(p => p.id === match.winnerId)?.name || 'Draw'}</span>` : ''}
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -2406,11 +2680,19 @@
             matchesDiv.appendChild(table);
         }
 
-        function recordRoundRobinScore(matchId) {
+        function recordRoundRobinScore(matchId, stageId = null) {
             const tournament = tournaments.find(t => t.id === currentTournamentId);
             if (!tournament) return;
 
-            const match = tournament.matches.find(m => m.id === matchId);
+            let matchesArray;
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                matchesArray = stage.matches;
+            } else {
+                matchesArray = tournament.matches;
+            }
+
+            const match = matchesArray.find(m => m.id === matchId);
             if (!match) return;
 
             const scoreInput1 = document.querySelector(`input[data-match-id="${matchId}"][data-player="1"]`);
@@ -2449,21 +2731,25 @@
 
             saveData();
             showAlert('Score recorded successfully!');
-            renderRoundRobinMatches(tournament);
-            renderRoundRobinStandings(tournament);
+            if (stageId) {
+                renderMultiStages(tournament);
+            } else {
+                renderRoundRobinMatches(tournament);
+                renderRoundRobinStandings(tournament);
+            }
         }
 
-        function renderRoundRobinStandings(tournament) {
-            const standingsDiv = document.getElementById('roundRobinStandings');
+        function renderRoundRobinStandings(tournament, targetElementId = 'roundRobinStandings', matchesArray = tournament.matches, participantsArray = tournament.participants, rrSettings = tournament.settings) {
+            const standingsDiv = document.getElementById(targetElementId);
             standingsDiv.innerHTML = '';
 
-            if (tournament.matches.length === 0) {
+            if (matchesArray.length === 0) {
                 standingsDiv.innerHTML = '<p class="no-data">Standings will appear after matches are generated and scores recorded.</p>';
                 return;
             }
 
             const participantStats = {};
-            tournament.participants.forEach(p => {
+            participantsArray.forEach(p => {
                 participantStats[p.id] = {
                     id: p.id,
                     name: p.name,
@@ -2477,7 +2763,7 @@
                 });
             });
 
-            tournament.matches.forEach(match => {
+            matchesArray.forEach(match => {
                 if (match.status === 'Completed') {
                     const p1Stats = participantStats[match.player1Id];
                     const p2Stats = participantStats[match.player2Id];
@@ -2500,18 +2786,18 @@
                     if (match.winnerId === match.player1Id) {
                         p1Stats.wins++;
                         p2Stats.losses++;
-                        p1Stats.points += tournament.settings.pointsWin;
-                        p2Stats.points += tournament.settings.pointsLoss;
+                        p1Stats.points += rrSettings.pointsWin;
+                        p2Stats.points += rrSettings.pointsLoss;
                     } else if (match.winnerId === match.player2Id) {
                         p2Stats.wins++;
                         p1Stats.losses++;
-                        p2Stats.points += tournament.settings.pointsWin;
-                        p1Stats.points += tournament.settings.pointsLoss;
+                        p2Stats.points += rrSettings.pointsWin;
+                        p1Stats.points += rrSettings.pointsLoss;
                     } else { // Draw
                         p1Stats.draws++;
                         p2Stats.draws++;
-                        p1Stats.points += tournament.settings.pointsDraw;
-                        p2Stats.points += tournament.settings.pointsDraw;
+                        p1Stats.points += rrSettings.pointsDraw;
+                        p2Stats.points += rrSettings.pointsDraw;
                     }
                 }
             });
@@ -2527,7 +2813,7 @@
             standings.sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
                 // Tie-breaking rules
-                switch (tournament.settings.tieBreaker) {
+                switch (rrSettings.tieBreaker) {
                     case 'Score Difference':
                         return b.scoreDiff - a.scoreDiff;
                     case 'Score For':
@@ -2585,6 +2871,233 @@
             });
             standingsDiv.appendChild(table);
         }
+
+        // --- Multi-Stage Management ---
+        function renderMultiStages(tournament) {
+            const stagesListDiv = document.getElementById('stagesList');
+            stagesListDiv.innerHTML = '';
+
+            if (tournament.stages.length === 0) {
+                stagesListDiv.innerHTML = '<p class="no-data">No stages defined. Click "Manage Stages" to add them.</p>';
+                return;
+            }
+
+            tournament.stages.forEach(stage => {
+                const stageCard = document.createElement('div');
+                stageCard.className = 'stage-card';
+                stageCard.innerHTML = `
+                    <div class="flex-between">
+                        <h4>${stage.name} (${stage.type})</h4>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" onclick="editStage('${stage.id}')">Edit Stage</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteStage('${stage.id}')">Delete Stage</button>
+                            <button class="btn btn-outline btn-sm" onclick="openAdvanceParticipantsModal('${stage.id}')">Add Participants</button>
+                            ${stage.type === TOURNAMENT_TYPES.ROUND_ROBIN ?
+                                `<button class="btn btn-primary btn-sm" onclick="generateRoundRobinMatches(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Generate Matches</button>` :
+                                `<button class="btn btn-primary btn-sm" onclick="generateEliminationBracket(tournaments.find(t => t.id === currentTournamentId), '${TOURNAMENT_TYPES.SINGLE_ELIMINATION}', '${stage.id}')">Generate Bracket</button>`
+                            }
+                        </div>
+                    </div>
+                    <p>Participants: ${stage.participants.length} / ${tournament.participants.length}</p>
+                    <div class="stage-content" id="stageContent_${stage.id}">
+                        <!-- Stage specific content will be rendered here -->
+                    </div>
+                `;
+                stagesListDiv.appendChild(stageCard);
+
+                const stageContentDiv = document.getElementById(`stageContent_${stage.id}`);
+                const stageParticipants = tournament.participants.filter(p => stage.participants.includes(p.id));
+
+                if (stage.type === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                    const matchesDiv = document.createElement('div');
+                    matchesDiv.id = `stageMatches_${stage.id}`;
+                    stageContentDiv.appendChild(matchesDiv);
+                    renderRoundRobinMatches(tournament, `stageMatches_${stage.id}`, stage.matches, stageParticipants, stage.settings, stage.id);
+
+                    const standingsDiv = document.createElement('div');
+                    standingsDiv.id = `stageStandings_${stage.id}`;
+                    stageContentDiv.appendChild(standingsDiv);
+                    renderRoundRobinStandings(tournament, `stageStandings_${stage.id}`, stage.matches, stageParticipants, stage.settings);
+                } else if (stage.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
+                    const bracketDiv = document.createElement('div');
+                    bracketDiv.className = 'bracket-visualizer';
+                    bracketDiv.id = `stageBracket_${stage.id}`;
+                    stageContentDiv.appendChild(bracketDiv);
+                    renderBracket(tournament, `stageBracket_${stage.id}`, stage.rounds, stage.id);
+                }
+            });
+        }
+
+        function openManageStagesModal() {
+            renderCurrentStagesList();
+            openModal('manageStagesModal');
+        }
+
+        function renderCurrentStagesList() {
+            const listDiv = document.getElementById('currentStagesList');
+            listDiv.innerHTML = '';
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            if (!tournament || tournament.stages.length === 0) {
+                listDiv.innerHTML = '<p class="no-data">No stages added yet.</p>';
+                return;
+            }
+
+            tournament.stages.forEach(stage => {
+                const item = document.createElement('div');
+                item.className = 'participant-item'; // Reusing style
+                item.innerHTML = `
+                    <div>
+                        <strong>${stage.name}</strong> (${stage.type})
+                        <br><small>Participants: ${stage.participants.length}</small>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary" onclick="editStage('${stage.id}')">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteStage('${stage.id}')">Delete</button>
+                    </div>
+                `;
+                listDiv.appendChild(item);
+            });
+        }
+
+        function openAddStageModal() {
+            document.getElementById('stageModalTitle').textContent = 'Add Stage';
+            document.getElementById('stageForm').reset();
+            document.getElementById('stageId').value = '';
+            document.getElementById('stageRoundRobinSettings').classList.add('hidden');
+            openModal('stageModal');
+        }
+
+        function addOrUpdateStage(event) {
+            event.preventDefault();
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            if (!tournament) return;
+
+            const stageId = document.getElementById('stageId').value;
+            const name = document.getElementById('stageName').value;
+            const type = document.getElementById('stageType').value;
+
+            if (!name || !type) {
+                showAlert('Stage name and type are required.', 'error');
+                return;
+            }
+
+            const stageSettings = {};
+            if (type === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                stageSettings.enableHomeAway = document.getElementById('stageRrEnableHomeAway').checked;
+                stageSettings.pointsWin = parseInt(document.getElementById('stageRrPointsWin').value) || 3;
+                stageSettings.pointsDraw = parseInt(document.getElementById('stageRrPointsDraw').value) || 1;
+                stageSettings.pointsLoss = parseInt(document.getElementById('stageRrPointsLoss').value) || 0;
+                stageSettings.tieBreaker = document.getElementById('stageRrTieBreaker').value || 'Score Difference';
+            }
+
+            if (stageId) {
+                const stage = tournament.stages.find(s => s.id === stageId);
+                if (stage) {
+                    stage.name = name;
+                    stage.type = type;
+                    stage.settings = stageSettings;
+                    showAlert('Stage updated successfully!');
+                }
+            } else {
+                const newStage = {
+                    id: generateUniqueId(),
+                    name, type,
+                    participants: [], // Participants for this specific stage
+                    matches: [], // For RR
+                    rounds: [], // For SE
+                    settings: stageSettings
+                };
+                tournament.stages.push(newStage);
+                showAlert('Stage added successfully!');
+            }
+
+            saveData();
+            renderMultiStages(tournament);
+            renderCurrentStagesList();
+            closeModal('stageModal');
+        }
+
+        function editStage(stageId) {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const stage = tournament.stages.find(s => s.id === stageId);
+            if (!stage) return;
+
+            document.getElementById('stageModalTitle').textContent = 'Edit Stage';
+            document.getElementById('stageId').value = stage.id;
+            document.getElementById('stageName').value = stage.name;
+            document.getElementById('stageType').value = stage.type;
+
+            if (stage.type === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                document.getElementById('stageRoundRobinSettings').classList.remove('hidden');
+                document.getElementById('stageRrEnableHomeAway').checked = stage.settings.enableHomeAway || false;
+                document.getElementById('stageRrPointsWin').value = stage.settings.pointsWin;
+                document.getElementById('stageRrPointsDraw').value = stage.settings.pointsDraw;
+                document.getElementById('stageRrPointsLoss').value = stage.settings.pointsLoss;
+                document.getElementById('stageRrTieBreaker').value = stage.settings.tieBreaker;
+            } else {
+                document.getElementById('stageRoundRobinSettings').classList.add('hidden');
+            }
+
+            openModal('stageModal');
+        }
+
+        function deleteStage(stageId) {
+            if (!confirm('Are you sure you want to delete this stage and all its matches/brackets?')) {
+                return;
+            }
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            if (tournament) {
+                tournament.stages = tournament.stages.filter(s => s.id !== stageId);
+                saveData();
+                showAlert('Stage deleted successfully!', 'danger');
+                renderMultiStages(tournament);
+                renderCurrentStagesList();
+            }
+        }
+
+        function openAdvanceParticipantsModal(stageId) {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const stage = tournament.stages.find(s => s.id === stageId);
+            if (!tournament || !stage) return;
+
+            document.getElementById('advanceStageId').value = stageId;
+            const availableParticipantsList = document.getElementById('availableParticipantsList');
+            availableParticipantsList.innerHTML = '';
+
+            tournament.participants.forEach(p => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'checkbox-group';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="adv_p_${p.id}" value="${p.id}" ${stage.participants.includes(p.id) ? 'checked' : ''}>
+                    <label for="adv_p_${p.id}">${p.name}</label>
+                `;
+                availableParticipantsList.appendChild(checkboxDiv);
+            });
+
+            openModal('advanceParticipantsModal');
+        }
+
+        function processAdvanceParticipants() {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const stageId = document.getElementById('advanceStageId').value;
+            const stage = tournament.stages.find(s => s.id === stageId);
+            if (!tournament || !stage) return;
+
+            const selectedParticipantIds = Array.from(document.querySelectorAll('#availableParticipantsList input[type="checkbox"]:checked'))
+                                                .map(cb => cb.value);
+
+            stage.participants = selectedParticipantIds;
+            // Reset matches/rounds for the stage if participants change
+            stage.matches = [];
+            stage.rounds = [];
+
+            saveData();
+            showAlert('Participants updated for stage successfully!');
+            renderMultiStages(tournament);
+            renderCurrentStagesList();
+            closeModal('advanceParticipantsModal');
+        }
+
 
         // --- Import/Export ---
         function exportData() {
@@ -2734,7 +3247,24 @@
                 const tournament = tournaments.find(t => t.id === currentTournamentId);
                 if (tournament) generateEliminationBracket(tournament, TOURNAMENT_TYPES.DOUBLE_ELIMINATION);
             });
-            document.getElementById('generateRoundRobinBtn').addEventListener('click', generateRoundRobinMatches);
+            document.getElementById('generateRoundRobinBtn').addEventListener('click', () => {
+                const tournament = tournaments.find(t => t.id === currentTournamentId);
+                if (tournament) generateRoundRobinMatches(tournament);
+            });
+
+            // Multi-Stage Management
+            document.getElementById('manageStagesBtn').addEventListener('click', openManageStagesModal);
+            document.getElementById('addStageBtn').addEventListener('click', openAddStageModal);
+            document.getElementById('stageForm').addEventListener('submit', addOrUpdateStage);
+            document.getElementById('stageType').addEventListener('change', (e) => {
+                if (e.target.value === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                    document.getElementById('stageRoundRobinSettings').classList.remove('hidden');
+                } else {
+                    document.getElementById('stageRoundRobinSettings').classList.add('hidden');
+                }
+            });
+            document.getElementById('processAdvanceParticipantsBtn').addEventListener('click', processAdvanceParticipants);
+
 
             // Match Details Modal
             document.getElementById('matchDetailsForm').addEventListener('submit', saveMatchDetails);
