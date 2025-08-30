@@ -1857,15 +1857,18 @@
                             if ((i + j) % 2 === 0) {
                                 this.context.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
                             }
+                            // Add a simple "ID" text in the middle for visual confirmation
+                            if (i === 4 && j === 4) {
+                                this.context.fillStyle = this.background;
+                                this.context.fillRect(this.size/4, this.size/2 - this.size/10, this.size/2, this.size/5);
+                                this.context.fillStyle = this.foreground;
+                                this.context.font = `${this.size / 8}px Arial`;
+                                this.context.textAlign = 'center';
+                                this.context.textBaseline = 'middle';
+                                this.context.fillText("ID", this.size / 2, this.size / 2);
+                            }
                         }
                     }
-                    this.context.font = `${this.size / 8}px Arial`;
-                    this.context.textAlign = 'center';
-                    this.context.textBaseline = 'middle';
-                    this.context.fillStyle = this.background;
-                    this.context.fillRect(this.size/4, this.size/2 - this.size/10, this.size/2, this.size/5);
-                    this.context.fillStyle = this.foreground;
-                    this.context.fillText("ID", this.size / 2, this.size / 2);
                     // End of simplified placeholder
 
                     // If you want a real QR code, you'd need a full library here.
@@ -1931,59 +1934,94 @@
                 if (!t.swissRounds) t.swissRounds = [];
                 if (!t.gslGroups) t.gslGroups = [];
                 if (!t.ladderRanks) t.ladderRanks = [];
+                if (!t.settings) t.settings = {}; // Ensure settings object exists
                 if (!t.settings.groupStage) t.settings.groupStage = {};
                 if (!t.settings.multiStage) t.settings.multiStage = {}; // New for Multi-Stage settings
+                if (!t.settings.playerStatsFields) t.settings.playerStatsFields = [];
+                if (t.settings.setBasedScoring === undefined) t.settings.setBasedScoring = false;
+                if (t.settings.bestOf === undefined) t.settings.bestOf = 1;
+
 
                 t.participants.forEach(p => {
-                    if (!p.teamStats) { // Renamed from p.stats
-                        p.teamStats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
+                    if (!p.teamStats) {
+                        p.teamStats = { matchesPlayed: 0, custom: {} };
                     }
-                    if (!p.players) { // New: Array for individual players
+                    // Ensure custom stats object exists for teamStats
+                    if (!p.teamStats.custom) p.teamStats.custom = {};
+                    t.settings.playerStatsFields.forEach(field => {
+                        if (p.teamStats.custom[field] === undefined) p.teamStats.custom[field] = 0;
+                    });
+
+                    if (!p.players) {
                         p.players = [];
                     }
-                    // Ensure player stats are initialized
                     p.players.forEach(player => {
                         if (!player.stats) {
-                            player.stats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
+                            player.stats = { matchesPlayed: 0, custom: {} };
                         }
+                        // Ensure custom stats object exists for player stats
+                        if (!player.stats.custom) player.stats.custom = {};
+                        t.settings.playerStatsFields.forEach(field => {
+                            if (player.stats.custom[field] === undefined) player.stats.custom[field] = 0;
+                        });
                     });
                 });
 
-                // Initialize new match stats structure for old matches
-                if (t.rounds) t.rounds.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
-                if (t.winnerBracket) t.winnerBracket.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
-                if (t.loserBracket) t.loserBracket.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
-                if (t.grandFinal) t.grandFinal.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
-                if (t.matches) t.matches.forEach(m => initializeMatchPlayerStats(m));
-                if (t.groups) t.groups.forEach(g => g.matches.forEach(m => initializeMatchPlayerStats(m)));
+                // Initialize new match stats structure for old matches and ensure stage/group IDs are present
+                const initializeMatch = (m, stageId = null, groupId = null) => {
+                    if (!m.team1MatchPlayerStats) m.team1MatchPlayerStats = [];
+                    if (!m.team2MatchPlayerStats) m.team2MatchPlayerStats = [];
+                    if (m.stageId === undefined && stageId !== null) m.stageId = stageId; // Set stageId if not present
+                    if (m.groupId === undefined && groupId !== null) m.groupId = groupId; // Set groupId if not present
+                    // Remove old player1Stats/player2Stats if they exist and are not arrays
+                    if (m.player1Stats && !Array.isArray(m.player1Stats)) delete m.player1Stats;
+                    if (m.player2Stats && !Array.isArray(m.player2Stats)) delete m.player2Stats;
+                };
+
+                if (t.rounds) t.rounds.forEach(r => r.matches.forEach(m => initializeMatch(m)));
+                if (t.winnerBracket) t.winnerBracket.forEach(r => r.matches.forEach(m => initializeMatch(m)));
+                if (t.loserBracket) t.loserBracket.forEach(r => r.matches.forEach(m => initializeMatch(m)));
+                if (t.grandFinal) t.grandFinal.forEach(r => r.matches.forEach(m => initializeMatch(m)));
+                if (t.matches) t.matches.forEach(m => initializeMatch(m));
+                if (t.groups) t.groups.forEach(g => g.matches.forEach(m => initializeMatch(m, null, g.id)));
                 if (t.stages) t.stages.forEach(s => {
-                    if (s.matches) s.matches.forEach(m => initializeMatchPlayerStats(m));
-                    if (s.rounds) s.rounds.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
-                    if (s.groups) s.groups.forEach(g => g.matches.forEach(m => initializeMatchPlayerStats(m)));
+                    if (s.matches) s.matches.forEach(m => initializeMatch(m, s.id));
+                    if (s.rounds) s.rounds.forEach(r => r.matches.forEach(m => initializeMatch(m, s.id)));
+                    if (s.groups) s.groups.forEach(g => g.matches.forEach(m => initializeMatch(m, s.id, g.id)));
                 });
             });
             renderTournamentList();
         }
 
-        function initializeMatchPlayerStats(match) {
-            if (!match.team1MatchPlayerStats) match.team1MatchPlayerStats = [];
-            if (!match.team2MatchPlayerStats) match.team2MatchPlayerStats = [];
-            // Remove old player1Stats/player2Stats if they exist and are not arrays
-            if (match.player1Stats && !Array.isArray(match.player1Stats)) delete match.player1Stats;
-            if (match.player2Stats && !Array.isArray(match.player2Stats)) delete match.player2Stats;
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
         }
-
 
         function showSection(sectionId) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.add('hidden');
             });
-            document.getElementById(sectionId).classList.remove('hidden');
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
 
             document.querySelectorAll('nav button').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.getElementById(`nav${sectionId.replace('Section', '')}`).classList.add('active');
+
+            // Only activate nav buttons for primary sections
+            const primaryNavSections = ['dashboardSection', 'createTournamentSection', 'importExportSection'];
+            if (primaryNavSections.includes(sectionId)) {
+                const navButtonId = `nav${sectionId.replace('Section', '')}`;
+                const navButton = document.getElementById(navButtonId);
+                if (navButton) {
+                    navButton.classList.add('active');
+                }
+            }
         }
 
         function showAlert(message, type = 'success') {
@@ -2097,8 +2135,8 @@
                         pointsDraw: newTournament.settings.multiStage.pointsDraw,
                         pointsLoss: newTournament.settings.multiStage.pointsLoss,
                         tieBreaker: newTournament.settings.multiStage.tieBreaker,
-                        setBasedScoring: newTournament.settings.setBasedScoring,
-                        playerStatsFields: newTournament.settings.playerStatsFields
+                        setBasedScoring: newTournament.settings.setBasedScoring, // Inherit
+                        playerStatsFields: newTournament.settings.playerStatsFields // Inherit
                     }
                 });
                 newTournament.stages.push({
@@ -2109,8 +2147,8 @@
                     rounds: [],
                     settings: { // Inherit/copy from multiStage settings
                         bestOf: newTournament.settings.multiStage.knockoutBestOf,
-                        setBasedScoring: newTournament.settings.setBasedScoring,
-                        playerStatsFields: newTournament.settings.playerStatsFields
+                        setBasedScoring: newTournament.settings.setBasedScoring, // Inherit
+                        playerStatsFields: newTournament.settings.playerStatsFields // Inherit
                     }
                 });
             } else if (type === TOURNAMENT_TYPES.SWISS_SYSTEM) {
@@ -2226,24 +2264,8 @@
             statusSelect.value = tournament.status;
 
             // Show/hide bracket/round robin/multi-stage sections and buttons
-            document.getElementById('eliminationBracketSection').classList.add('hidden');
-            document.getElementById('doubleEliminationBracketSection').classList.add('hidden');
-            document.getElementById('roundRobinMatchesSection').classList.add('hidden');
-            document.getElementById('multiStageContainer').classList.add('hidden');
-            document.getElementById('groupStageSection').classList.add('hidden');
-            document.getElementById('swissSection').classList.add('hidden');
-            document.getElementById('gslSection').classList.add('hidden');
-            document.getElementById('ladderSection').classList.add('hidden');
-            document.getElementById('playerLeaderboardsSection').classList.add('hidden'); // Always show if player stats fields exist
-
-            document.getElementById('generateBracketBtn').classList.add('hidden');
-            document.getElementById('generateDoubleEliminationBracketBtn').classList.add('hidden');
-            document.getElementById('generateRoundRobinBtn').classList.add('hidden');
-            document.getElementById('manageStagesBtn').classList.add('hidden');
-            document.getElementById('generateGroupStageBtn').classList.add('hidden');
-            document.getElementById('generateSwissBtn').classList.add('hidden');
-            document.getElementById('generateGSLBtn').classList.add('hidden');
-            document.getElementById('manageLadderBtn').classList.add('hidden');
+            document.querySelectorAll('#tournamentDetailSection > div[id$="Section"], #tournamentDetailSection > div[id$="Container"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.flex-gap-10 > button[id^="generate"], .flex-gap-10 > button[id^="manage"]').forEach(btn => btn.classList.add('hidden'));
 
 
             if (tournament.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
@@ -2286,6 +2308,7 @@
             // Always render player leaderboards if custom fields are defined
             if (tournament.settings.playerStatsFields && tournament.settings.playerStatsFields.length > 0) {
                 document.getElementById('playerLeaderboardsSection').classList.remove('hidden');
+                updateAggregatedPlayerStats(tournament); // Ensure stats are fresh before rendering
                 renderPlayerLeaderboards(tournament);
             } else {
                 document.getElementById('playerLeaderboardsSection').classList.add('hidden');
@@ -2549,9 +2572,10 @@
                     id: generateUniqueId(),
                     name, seed, rating, contact, notes,
                     wins: 0, losses: 0, draws: 0, scoreFor: 0, scoreAgainst: 0, points: 0,
-                    teamStats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} }, // Team-level aggregated stats
+                    teamStats: { matchesPlayed: 0, custom: {} }, // Team-level aggregated stats
                     players: [] // Individual players within this team
                 };
+                tournament.settings.playerStatsFields.forEach(field => newParticipant.teamStats.custom[field] = 0);
                 tournament.participants.push(newParticipant);
                 showAlert('Team added successfully!');
             }
@@ -2620,13 +2644,15 @@
                         showAlert(`Max teams reached. Stopped importing at "${name}".`, 'error');
                         return;
                     }
-                    tournament.participants.push({
+                    const newParticipant = {
                         id: generateUniqueId(),
                         name, seed: null, rating: null, contact: '', notes: '',
                         wins: 0, losses: 0, draws: 0, scoreFor: 0, scoreAgainst: 0, points: 0,
-                        teamStats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} },
+                        teamStats: { matchesPlayed: 0, custom: {} },
                         players: []
-                    });
+                    };
+                    tournament.settings.playerStatsFields.forEach(field => newParticipant.teamStats.custom[field] = 0);
+                    tournament.participants.push(newParticipant);
                     addedCount++;
                 });
 
@@ -2675,7 +2701,7 @@
                 }
                 // Only copy if participant name doesn't already exist to avoid duplicates
                 if (!targetTournament.participants.some(tp => tp.name === p.name)) {
-                    targetTournament.participants.push({
+                    const newParticipant = {
                         id: generateUniqueId(), // New ID for the copied participant
                         name: p.name,
                         seed: p.seed,
@@ -2683,9 +2709,17 @@
                         contact: p.contact,
                         notes: p.notes,
                         wins: 0, losses: 0, draws: 0, scoreFor: 0, scoreAgainst: 0, points: 0,
-                        teamStats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} },
+                        teamStats: { matchesPlayed: 0, custom: {} },
                         players: JSON.parse(JSON.stringify(p.players)) // Deep copy players
+                    };
+                    // Initialize custom stats for new participant
+                    targetTournament.settings.playerStatsFields.forEach(field => newParticipant.teamStats.custom[field] = 0);
+                    newParticipant.players.forEach(player => {
+                        if (!player.stats) player.stats = { matchesPlayed: 0, custom: {} };
+                        targetTournament.settings.playerStatsFields.forEach(field => player.stats.custom[field] = 0);
                     });
+
+                    targetTournament.participants.push(newParticipant);
                     copiedCount++;
                 }
             });
@@ -2773,7 +2807,7 @@
                 playerInitialStatsDiv.innerHTML += `
                     <div class="form-group">
                         <label for="player_initial_stat_${field}">${field}</label>
-                        <input type="number" id="player_initial_stat_${field}" value="${player.stats[field] || 0}" data-stat-field="${field}">
+                        <input type="number" id="player_initial_stat_${field}" value="${player.stats.custom[field] !== undefined ? player.stats.custom[field] : 0}" data-stat-field="${field}">
                     </div>
                 `;
             });
@@ -2796,9 +2830,9 @@
                 return;
             }
 
-            const playerStats = { matchesPlayed: 0 };
+            const playerCustomStats = {};
             tournament.settings.playerStatsFields.forEach(field => {
-                playerStats[field] = parseInt(document.getElementById(`player_initial_stat_${field}`).value) || 0;
+                playerCustomStats[field] = parseInt(document.getElementById(`player_initial_stat_${field}`).value) || 0;
             });
 
             if (playerId) {
@@ -2806,10 +2840,8 @@
                 const player = team.players.find(p => p.id === playerId);
                 if (player) {
                     player.name = playerName;
-                    // Only update initial stats if they are being edited directly, otherwise aggregated stats will overwrite
-                    // For simplicity, when editing, we're updating the *current aggregated* stats.
-                    // A more robust system might separate initial stats from aggregated stats.
-                    Object.assign(player.stats, playerStats);
+                    // Update initial custom stats, aggregated stats will be recalculated
+                    Object.assign(player.stats.custom, playerCustomStats);
                     showAlert('Player updated successfully!');
                 }
             } else {
@@ -2817,7 +2849,7 @@
                 const newPlayer = {
                     id: generateUniqueId(),
                     name: playerName,
-                    stats: playerStats // Initial stats
+                    stats: { matchesPlayed: 0, custom: playerCustomStats } // Initial stats
                 };
                 team.players.push(newPlayer);
                 showAlert('Player added successfully!');
@@ -2851,7 +2883,7 @@
         function generateEliminationBracket(tournament, bracketType, stageId = null) {
             let participantsInScope;
             let targetBracket;
-            let bestOf = tournament.settings.bestOf || 1;
+            let bestOf;
             let confirmMessage;
 
             if (stageId) {
@@ -2863,9 +2895,11 @@
                 confirmMessage = `Bracket for stage "${stage.name}" already generated. Regenerating will clear all scores. Continue?`;
             } else {
                 participantsInScope = tournament.participants;
-                targetBracket = tournament.rounds;
+                bestOf = tournament.settings.bestOf || 1;
                 if (bracketType === TOURNAMENT_TYPES.DOUBLE_ELIMINATION) {
                     targetBracket = tournament.winnerBracket;
+                } else {
+                    targetBracket = tournament.rounds;
                 }
                 confirmMessage = 'Bracket already generated. Regenerating will clear all scores. Continue?';
             }
@@ -2903,7 +2937,6 @@
             let totalSlots = Math.pow(2, numRounds);
             let byes = totalSlots - numParticipants;
 
-            let initialBracketParticipants = [];
             let tempParticipants = [...sortedParticipants];
             let byeParticipants = [];
 
@@ -2933,13 +2966,19 @@
             let currentSeededIndex = 0;
             let currentByeIndex = 0;
 
+            // Fill slots, prioritizing seeded participants, then byes
             for (let i = 0; i < totalSlots; i++) {
-                if (i < byes) { // First 'byes' slots get byes
+                if (currentSeededIndex < seededOrder.length) {
+                    finalParticipantsForPairing.push({ participant: seededOrder[currentSeededIndex++], bye: false });
+                } else if (currentByeIndex < byeParticipants.length) {
                     finalParticipantsForPairing.push({ participant: byeParticipants[currentByeIndex++], bye: true });
                 } else {
-                    finalParticipantsForPair.push({ participant: seededOrder[currentSeededIndex++], bye: false });
+                    finalParticipantsForPairing.push({ participant: null, bye: false });
                 }
             }
+            // Shuffle the byes and seeded participants to ensure fair distribution of byes
+            shuffleArray(finalParticipantsForPairing);
+
 
             // Create initial matches for Round 1
             let round1Matches = [];
@@ -2951,17 +2990,15 @@
                 const p2 = p2Entry?.participant;
 
                 if (p1Entry?.bye && p2Entry?.bye) {
-                    // This case should ideally not happen with proper bye distribution
-                    // but as a fallback, treat as a match between two byes, one advances
-                    round1Matches.push(createMatchObject(p1.id, null, tournament.settings.playerStatsFields, p1.id, 'Completed - Bye', bestOf));
+                    round1Matches.push(createMatchObject(p1.id, null, tournament.settings.playerStatsFields, p1.id, 'Completed - Bye', bestOf, null, null, stageId));
                 } else if (p1Entry?.bye) { // P1 has a bye, P2 advances
-                    round1Matches.push(createMatchObject(p2.id, null, tournament.settings.playerStatsFields, p2.id, 'Completed - Bye', bestOf));
+                    round1Matches.push(createMatchObject(p2.id, null, tournament.settings.playerStatsFields, p2.id, 'Completed - Bye', bestOf, null, null, stageId));
                 } else if (p2Entry?.bye) { // P2 has a bye, P1 advances
-                    round1Matches.push(createMatchObject(p1.id, null, tournament.settings.playerStatsFields, p1.id, 'Completed - Bye', bestOf));
+                    round1Matches.push(createMatchObject(p1.id, null, tournament.settings.playerStatsFields, p1.id, 'Completed - Bye', bestOf, null, null, stageId));
                 } else if (p1 && p2) {
-                    round1Matches.push(createMatchObject(p1.id, p2.id, tournament.settings.playerStatsFields, null, 'Upcoming', bestOf));
+                    round1Matches.push(createMatchObject(p1.id, p2.id, tournament.settings.playerStatsFields, null, 'Upcoming', bestOf, null, null, stageId));
                 } else if (p1) { // Odd number of participants, last one gets a bye (should be handled by initial bye assignment)
-                    round1Matches.push(createMatchObject(p1.id, null, tournament.settings.playerStatsFields, p1.id, 'Completed - Bye', bestOf));
+                    round1Matches.push(createMatchObject(p1.id, null, tournament.settings.playerStatsFields, p1.id, 'Completed - Bye', bestOf, null, null, stageId));
                 }
             }
 
@@ -2973,7 +3010,7 @@
                         let nextRoundMatches = [];
                         const numMatchesInRound = Math.ceil(round1Matches.length / Math.pow(2, r));
                         for (let i = 0; i < numMatchesInRound; i++) {
-                            nextRoundMatches.push(createMatchObject(null, null, tournament.settings.playerStatsFields, null, 'Upcoming', bestOf));
+                            nextRoundMatches.push(createMatchObject(null, null, tournament.settings.playerStatsFields, null, 'Upcoming', bestOf, null, null, stageId));
                         }
                         if (nextRoundMatches.length > 0) {
                             stage.rounds.push({ name: `Round ${r + 1}`, matches: nextRoundMatches });
@@ -3030,7 +3067,7 @@
             updateAggregatedPlayerStats(tournament); // Update player stats after bracket generation
         }
 
-        function createMatchObject(player1Id, player2Id, playerStatsFields, winnerId = null, status = 'Upcoming', bestOf = 1, homePlayerId = null, awayPlayerId = null) {
+        function createMatchObject(player1Id, player2Id, playerStatsFields, winnerId = null, status = 'Upcoming', bestOf = 1, homePlayerId = null, awayPlayerId = null, stageId = null, groupId = null) {
             const match = {
                 id: generateUniqueId(),
                 player1Id, // This is now a Team ID
@@ -3047,6 +3084,8 @@
                 time: null,
                 venue: null,
                 referee: null,
+                stageId: stageId, // Store stage ID
+                groupId: groupId,   // Store group ID
                 team1MatchPlayerStats: [], // Array of player stats for Team 1 in this match
                 team2MatchPlayerStats: []  // Array of player stats for Team 2 in this match
             };
@@ -3055,9 +3094,10 @@
 
         function renderBracket(tournament, targetElementId = 'bracketVisualizer', roundsArray = tournament.rounds, stageId = null) {
             const bracketVisualizer = document.getElementById(targetElementId);
+            if (!bracketVisualizer) return; // Ensure element exists
             bracketVisualizer.innerHTML = '';
 
-            if (roundsArray.length === 0) {
+            if (!roundsArray || roundsArray.length === 0) {
                 bracketVisualizer.innerHTML = '<p class="no-data">Bracket not generated. Add teams and click "Generate Bracket".</p>';
                 return;
             }
@@ -3068,7 +3108,7 @@
                 roundDiv.innerHTML = `<h4>${round.name}</h4>`;
 
                 round.matches.forEach(match => {
-                    roundDiv.appendChild(createMatchElementHTML(match, tournament, roundIndex, 'rounds', stageId));
+                    roundDiv.appendChild(createMatchElementHTML(match, tournament, roundIndex, 'rounds'));
                 });
                 bracketVisualizer.appendChild(roundDiv);
             });
@@ -3083,9 +3123,10 @@
 
         function renderDoubleEliminationBracket(tournament) {
             const deWrapper = document.getElementById('doubleEliminationWrapper');
+            if (!deWrapper) return; // Ensure element exists
             deWrapper.innerHTML = '';
 
-            if (tournament.winnerBracket.length === 0) {
+            if (!tournament.winnerBracket || tournament.winnerBracket.length === 0) {
                 deWrapper.innerHTML = '<p class="no-data">Double Elimination Bracket not generated. Add teams and click "Generate DE Bracket".</p>';
                 return;
             }
@@ -3148,9 +3189,19 @@
             }
         }
 
-        function createMatchElementHTML(match, tournament, roundIndex, bracketType, stageId = null, groupId = null) {
-            const p1 = tournament.participants.find(p => p.id === match.player1Id); // p1 is now team1
-            const p2 = tournament.participants.find(p => p.id === match.player2Id); // p2 is now team2
+        function createMatchElementHTML(match, tournament, roundIndex, bracketType) {
+            // Determine participants in scope based on match.stageId and match.groupId
+            let participantsInScope = tournament.participants;
+            if (match.stageId) {
+                const stage = tournament.stages.find(s => s.id === match.stageId);
+                if (stage) participantsInScope = tournament.participants.filter(p => stage.participants.includes(p.id));
+            } else if (match.groupId) { // Main tournament group
+                const group = tournament.groups.find(g => g.id === match.groupId);
+                if (group) participantsInScope = tournament.participants.filter(p => group.participants.includes(p.id));
+            }
+
+            const p1 = participantsInScope.find(p => p.id === match.player1Id); // p1 is now team1
+            const p2 = participantsInScope.find(p => p.id === match.player2Id); // p2 is now team2
 
             const scoreInputHtml1 = p1 ? (tournament.settings.setBasedScoring ?
                 `<input type="text" class="sets-input" value="${match.sets !== null ? match.sets.split('-')[0] : ''}" data-player="1" ${match.status !== 'Upcoming' ? 'disabled' : ''}>` :
@@ -3171,9 +3222,9 @@
                     ${scoreInputHtml2}
                 </div>
                 <div class="match-actions">
-                    <button class="btn btn-outline" onclick="openMatchDetailsModal('${match.id}', ${roundIndex}, '${bracketType}', '${stageId || ''}', '${groupId || ''}')">Details</button>
-                    ${match.status === 'Upcoming' && p1 && p2 ? `<button class="btn btn-primary" onclick="recordScore('${match.id}', ${roundIndex}, '${bracketType}', '${stageId || ''}', '${groupId || ''}')">Record Score</button>` : ''}
-                    ${match.status === 'Completed' ? `<span style="color: var(--primary-color); font-weight: bold;">Winner: ${tournament.participants.find(p => p.id === match.winnerId)?.name || 'N/A'}</span>` : ''}
+                    <button class="btn btn-outline" onclick="openMatchDetailsModal('${match.id}', ${roundIndex}, '${bracketType}', '${match.stageId || ''}', '${match.groupId || ''}')">Details</button>
+                    ${match.status === 'Upcoming' && p1 && p2 ? `<button class="btn btn-primary" onclick="recordScore('${match.id}', ${roundIndex}, '${bracketType}', '${match.stageId || ''}', '${match.groupId || ''}')">Record Score</button>` : ''}
+                    ${match.status === 'Completed' ? `<span style="color: var(--primary-color); font-weight: bold;">Winner: ${participantsInScope.find(p => p.id === match.winnerId)?.name || 'N/A'}</span>` : ''}
                     ${match.status === 'Completed - Bye' ? `<span style="color: var(--secondary-color); font-weight: bold;">BYE - ${p1?.name || 'N/A'} Advances</span>` : ''}
                 </div>
             `;
@@ -3181,55 +3232,59 @@
         }
 
         // Consolidated record score function for all types
-        function recordScore(matchId, roundIndex, bracketType, stageId = null, groupId = null) {
+        async function recordScore(matchId, roundIndex, bracketType, stageId = null, groupId = null) {
             const tournament = tournaments.find(t => t.id === currentTournamentId);
             if (!tournament) return;
 
-            let matchesArray, bracket, rrSettings, bestOf;
+            let matchesArray, bracket, rrSettings;
             let participantsForMatch = tournament.participants; // Default to all tournament participants
+            let currentStage = null;
+            let currentGroup = null;
+            let bestOf = tournament.settings.bestOf || 1; // Default bestOf from tournament settings
 
             if (stageId) {
-                const stage = tournament.stages.find(s => s.id === stageId);
-                if (!stage) return;
-                participantsForMatch = tournament.participants.filter(p => stage.participants.includes(p.id));
-                bestOf = stage.settings.bestOf || tournament.settings.bestOf || 1;
+                currentStage = tournament.stages.find(s => s.id === stageId);
+                if (!currentStage) { showAlert('Stage not found for match score.', 'error'); return; }
+                participantsForMatch = tournament.participants.filter(p => currentStage.participants.includes(p.id));
+                bestOf = currentStage.settings.bestOf || bestOf; // Use stage bestOf if available
                 if (bracketType === 'matches') { // RR stage
-                    matchesArray = stage.matches;
-                    rrSettings = stage.settings;
+                    matchesArray = currentStage.matches;
+                    rrSettings = currentStage.settings;
                 } else if (bracketType === 'groupMatches') { // Group Stage within a Multi-Stage
-                    const group = stage.groups.find(g => g.id === groupId);
-                    if (!group) return;
-                    matchesArray = group.matches;
-                    participantsForMatch = tournament.participants.filter(p => group.participants.includes(p.id));
-                    rrSettings = stage.settings; // Use stage settings for RR within groups
+                    currentGroup = currentStage.groups.find(g => g.id === groupId);
+                    if (!currentGroup) { showAlert('Group not found for match score.', 'error'); return; }
+                    matchesArray = currentGroup.matches;
+                    participantsForMatch = tournament.participants.filter(p => currentGroup.participants.includes(p.id));
+                    rrSettings = currentStage.settings; // Use stage settings for RR within groups
                 } else { // SE stage
-                    bracket = stage.rounds;
+                    bracket = currentStage.rounds;
                 }
             } else if (groupId) { // Group Stage tournament type
-                const group = tournament.groups.find(g => g.id === groupId);
-                if (!group) return;
-                matchesArray = group.matches;
-                participantsForMatch = tournament.participants.filter(p => group.participants.includes(p.id));
+                currentGroup = tournament.groups.find(g => g.id === groupId);
+                if (!currentGroup) { showAlert('Group not found for match score.', 'error'); return; }
+                matchesArray = currentGroup.matches;
+                participantsForMatch = tournament.participants.filter(p => currentGroup.participants.includes(p.id));
                 rrSettings = tournament.settings.groupStage; // Use group stage specific settings
                 bestOf = 1; // Group stage matches are typically best of 1
             } else { // Main tournament (SE, DE, RR)
-                bestOf = tournament.settings.bestOf || 1;
-                if (bracketType === 'matches') { // RR tournament
+                if (bracketType === 'matches') {
                     matchesArray = tournament.matches;
                     rrSettings = tournament.settings;
-                } else { // SE/DE tournament
+                } else {
                     bracket = tournament[bracketType];
                 }
             }
 
             let match;
             if (bracketType === 'matches' || bracketType === 'groupMatches') { // RR or Group Stage matches
+                if (!matchesArray) { showAlert('Matches array not found for score recording.', 'error'); return; }
                 match = matchesArray.find(m => m.id === matchId);
             } else { // Elimination brackets
+                if (!bracket || !bracket[roundIndex]) { showAlert('Bracket round not found for score recording.', 'error'); return; }
                 match = bracket[roundIndex].matches.find(m => m.id === matchId);
             }
 
-            if (!match) return;
+            if (!match) { showAlert('Match not found for score recording.', 'error'); return; }
 
             const matchElement = document.querySelector(`[onclick*="recordScore('${matchId}'"]`).closest('.bracket-match-simple, tr');
             let score1, score2;
@@ -3328,6 +3383,16 @@
             // Re-render relevant sections
             if (stageId) {
                 renderMultiStages(tournament);
+                // Check if all group stage matches are completed for auto-advancement
+                if (currentStage.type === TOURNAMENT_TYPES.GROUP_STAGE) {
+                    const allGroupMatchesCompleted = currentStage.groups.every(group =>
+                        group.matches.every(m => m.status === 'Completed')
+                    );
+                    if (allGroupMatchesCompleted) {
+                        showAlert(`All matches in ${currentStage.name} completed. Advancing qualifiers to next stage...`, 'info');
+                        await advanceQualifiersToKnockout(tournament, stageId);
+                    }
+                }
             } else if (groupId) {
                 generateGroupStage(tournament); // Re-render group stage to update standings
             } else if (bracketType === 'rounds') {
@@ -3364,35 +3429,42 @@
             let match;
             let participantsForMatch; // Teams in scope for this match
 
+            // Find the match object
             if (stageId) {
                 const stage = tournament.stages.find(s => s.id === stageId);
-                if (!stage) return;
+                if (!stage) { showAlert('Stage not found for match details.', 'error'); return; }
                 participantsForMatch = tournament.participants.filter(p => stage.participants.includes(p.id));
                 if (bracketType === 'matches') { // RR stage
+                    if (!stage.matches) { showAlert('Stage matches not found for details.', 'error'); return; }
                     match = stage.matches.find(m => m.id === matchId);
                 } else if (bracketType === 'groupMatches') {
                     const group = stage.groups.find(g => g.id === groupId);
-                    if (!group) return;
+                    if (!group) { showAlert('Group not found for match details.', 'error'); return; }
+                    if (!group.matches) { showAlert('Group matches not found for details.', 'error'); return; }
                     match = group.matches.find(m => m.id === matchId);
                     participantsForMatch = tournament.participants.filter(p => group.participants.includes(p.id));
                 } else { // SE stage
+                    if (!stage.rounds || !stage.rounds[roundIndex]) { showAlert('Stage round not found for match details.', 'error'); return; }
                     match = stage.rounds[roundIndex].matches.find(m => m.id === matchId);
                 }
-            } else if (groupId) {
+            } else if (groupId) { // Main tournament group
                 const group = tournament.groups.find(g => g.id === groupId);
-                if (!group) return;
+                if (!group) { showAlert('Group not found for match details.', 'error'); return; }
+                if (!group.matches) { showAlert('Group matches not found for details.', 'error'); return; }
                 match = group.matches.find(m => m.id === matchId);
                 participantsForMatch = tournament.participants.filter(p => group.participants.includes(p.id));
-            } else {
-                if (bracketType === 'matches') { // RR tournament
+            } else { // Main tournament (SE, DE, RR)
+                if (bracketType === 'matches') {
+                    if (!tournament.matches) { showAlert('Tournament matches not found for details.', 'error'); return; }
                     match = tournament.matches.find(m => m.id === matchId);
-                } else { // SE/DE tournament
+                } else {
+                    if (!tournament[bracketType] || !tournament[bracketType][roundIndex]) { showAlert('Tournament bracket round not found for match details.', 'error'); return; }
                     match = tournament[bracketType][roundIndex].matches.find(m => m.id === matchId);
                 }
                 participantsForMatch = tournament.participants;
             }
 
-            if (!match) return;
+            if (!match) { showAlert('Match not found for details.', 'error'); return; }
 
             const team1 = participantsForMatch.find(p => p.id === match.player1Id);
             const team2 = participantsForMatch.find(p => p.id === match.player2Id);
@@ -3401,8 +3473,8 @@
             document.getElementById('matchDetailsMatchId').value = match.id;
             document.getElementById('matchDetailsRoundIndex').value = roundIndex;
             document.getElementById('matchDetailsBracketType').value = bracketType;
-            document.getElementById('matchDetailsStageId').value = stageId;
-            document.getElementById('matchDetailsGroupId').value = groupId;
+            document.getElementById('matchDetailsStageId').value = stageId || '';
+            document.getElementById('matchDetailsGroupId').value = groupId || '';
 
             document.getElementById('matchDetailsPlayer1').value = team1?.name || 'BYE';
             document.getElementById('matchDetailsPlayer2').value = team2?.name || 'BYE';
@@ -3516,7 +3588,6 @@
             match.team2MatchPlayerStats = [];
 
             document.querySelectorAll('#team1PlayerStatsInputs input[data-player-id]').forEach(input => {
-                const teamId = input.dataset.teamId;
                 const playerId = input.dataset.playerId;
                 const statField = input.dataset.stat;
                 let playerStatsEntry = match.team1MatchPlayerStats.find(s => s.playerId === playerId);
@@ -3528,7 +3599,6 @@
             });
 
             document.querySelectorAll('#team2PlayerStatsInputs input[data-player-id]').forEach(input => {
-                const teamId = input.dataset.teamId;
                 const playerId = input.dataset.playerId;
                 const statField = input.dataset.stat;
                 let playerStatsEntry = match.team2MatchPlayerStats.find(s => s.playerId === playerId);
@@ -3611,7 +3681,9 @@
                 tournament.matches = [];
             }
 
-            const teams = participantsInScope;
+            let teams = [...participantsInScope];
+            shuffleArray(teams); // Randomize the order of teams before scheduling
+
             let numTeams = teams.length;
             let tempTeams = [...teams];
 
@@ -3635,10 +3707,10 @@
                     }
 
                     // Match 1: t1 vs t2
-                    allMatches.push(createMatchObject(t1.id, t2.id, playerStatsFields, null, 'Upcoming', 1, t1.id, t2.id));
+                    allMatches.push(createMatchObject(t1.id, t2.id, playerStatsFields, null, 'Upcoming', 1, t1.id, t2.id, stageId, group?.id));
                     if (rrSettings.enableHomeAway) {
                         // Match 2: t2 vs t1 (home/away swapped)
-                        allMatches.push(createMatchObject(t2.id, t1.id, playerStatsFields, null, 'Upcoming', 1, t2.id, t1.id));
+                        allMatches.push(createMatchObject(t2.id, t1.id, playerStatsFields, null, 'Upcoming', 1, t2.id, t1.id, stageId, group?.id));
                     }
                 }
 
@@ -3666,9 +3738,10 @@
 
         function renderRoundRobinMatches(tournament, targetElementId = 'roundRobinMatches', matchesArray = tournament.matches, participantsArray = tournament.participants, rrSettings = tournament.settings, stageId = null, groupId = null) {
             const matchesDiv = document.getElementById(targetElementId);
+            if (!matchesDiv) return; // Ensure element exists
             matchesDiv.innerHTML = '';
 
-            if (matchesArray.length === 0) {
+            if (!matchesArray || matchesArray.length === 0) {
                 matchesDiv.innerHTML = '<p class="no-data">Matches not generated. Add teams and click "Generate Matches".</p>';
                 return;
             }
@@ -3692,8 +3765,6 @@
             const tbody = table.querySelector('tbody');
 
             matchesArray.forEach(match => {
-                const t1 = participantsArray.find(p => p.id === match.player1Id);
-                const t2 = participantsArray.find(p => p.id === match.player2Id);
                 const homeTeam = participantsArray.find(p => p.id === match.homePlayerId);
                 const awayTeam = participantsArray.find(p => p.id === match.awayPlayerId);
 
@@ -3729,11 +3800,11 @@
 
         function renderRoundRobinStandings(tournament, targetElementId = 'roundRobinStandings', matchesArray = tournament.matches, participantsArray = tournament.participants, rrSettings = tournament.settings) {
             const standingsDiv = document.getElementById(targetElementId);
-            standingsDiv.innerHTML = '';
+            if (standingsDiv) standingsDiv.innerHTML = ''; // Only clear if targetElementId is provided
 
-            if (matchesArray.length === 0) {
-                standingsDiv.innerHTML = '<p class="no-data">Standings will appear after matches are generated and scores recorded.</p>';
-                return;
+            if (!matchesArray || matchesArray.length === 0) {
+                if (standingsDiv) standingsDiv.innerHTML = '<p class="no-data">Standings will appear after matches are generated and scores recorded.</p>';
+                return []; // Return empty array if no matches
             }
 
             const teamStats = {};
@@ -3858,13 +3929,14 @@
                 row.innerHTML = rowHtml;
                 tbody.appendChild(row);
             });
-            standingsDiv.appendChild(table);
+            if (standingsDiv) standingsDiv.appendChild(table);
             return standings;
         }
 
         // --- NEW: Group Stage Logic (for Group Stage tournament type AND Multi-Stage Group Stage) ---
         function generateGroupStage(tournament, targetElementId = 'groupsDisplay', groupsArray = tournament.groups, groupStageSettings = tournament.settings.groupStage, stageId = null) {
             const groupsDisplayDiv = document.getElementById(targetElementId);
+            if (!groupsDisplayDiv) return; // Ensure element exists
             groupsDisplayDiv.innerHTML = '';
 
             let participantsInScope = tournament.participants;
@@ -3890,7 +3962,12 @@
                 }
 
                 // 1. Split into groups (serpentine seeding)
-                const sortedParticipants = [...participantsInScope].sort((a, b) => (a.seed || Infinity) - (b.seed || Infinity));
+                const sortedParticipants = [...participantsInScope].sort((a, b) => {
+                    if (a.seed && b.seed) return a.seed - b.seed;
+                    if (a.seed) return -1;
+                    if (b.seed) return 1;
+                    return Math.random() - 0.5;
+                });
                 const newGroups = Array.from({ length: groupsCount }, (_, i) => ({
                     id: generateUniqueId(),
                     name: `Group ${String.fromCharCode(65 + i)}`, // A, B, C...
@@ -3922,7 +3999,7 @@
                 showAlert('Group Stage generated successfully!');
             }
 
-            if (groupsArray.length === 0) {
+            if (!groupsArray || groupsArray.length === 0) {
                 groupsDisplayDiv.innerHTML = '<p class="no-data">Groups not generated. Add teams and click "Generate Groups".</p>';
                 return;
             }
@@ -3974,7 +4051,7 @@
         }
 
         // NEW: Function to advance qualifiers from Group Stage to Knockout Stage
-        function advanceQualifiersToKnockout(tournament, groupStageId) {
+        async function advanceQualifiersToKnockout(tournament, groupStageId) {
             const groupStage = tournament.stages.find(s => s.id === groupStageId);
             const knockoutStage = tournament.stages.find(s => s.name === 'Knockout Stage' && s.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION);
 
@@ -3983,14 +4060,14 @@
                 return;
             }
 
-            if (groupStage.groups.length === 0) {
+            if (!groupStage.groups || groupStage.groups.length === 0) {
                 showAlert('Group Stage has not been generated yet. Please generate groups first.', 'error');
                 return;
             }
 
             // Check if all group matches are completed
             const allMatchesCompleted = groupStage.groups.every(group =>
-                group.matches.every(match => match.status === 'Completed')
+                group.matches && group.matches.every(match => match.status === 'Completed')
             );
 
             if (!allMatchesCompleted) {
@@ -4024,11 +4101,12 @@
         // --- Multi-Stage Management ---
         function renderMultiStages(tournament) {
             const stagesListDiv = document.getElementById('stagesList');
+            if (!stagesListDiv) return; // Ensure element exists
             stagesListDiv.innerHTML = '';
             const manageStagesActionsDiv = document.getElementById('manageStagesActions');
-            manageStagesActionsDiv.innerHTML = ''; // Clear generic buttons
+            if (manageStagesActionsDiv) manageStagesActionsDiv.innerHTML = ''; // Clear generic buttons
 
-            if (tournament.stages.length === 0) {
+            if (!tournament.stages || tournament.stages.length === 0) {
                 stagesListDiv.innerHTML = '<p class="no-data">No stages defined. This tournament type expects predefined stages. Please edit tournament settings or recreate.</p>';
                 return;
             }
@@ -4036,15 +4114,28 @@
             tournament.stages.forEach(stage => {
                 const stageCard = document.createElement('div');
                 stageCard.className = 'stage-card';
+                let stageActionsHtml = '';
+
+                if (stage.type === TOURNAMENT_TYPES.GROUP_STAGE) {
+                    stageActionsHtml = `
+                        <button class="btn btn-primary btn-sm" onclick="generateMultiStageGroups(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Generate Groups</button>
+                        <button class="btn btn-secondary btn-sm" onclick="advanceQualifiersToKnockout(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Advance Qualifiers</button>
+                    `;
+                } else if (stage.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
+                    // For Knockout Stage in Multi-Stage, the bracket is auto-generated.
+                    // The button is hidden here.
+                    // stageActionsHtml = `<button class="btn btn-primary btn-sm" onclick="generateEliminationBracket(tournaments.find(t => t.id === currentTournamentId), '${TOURNAMENT_TYPES.SINGLE_ELIMINATION}', '${stage.id}')">Generate Bracket</button>`;
+                } else if (stage.type === TOURNAMENT_TYPES.ROUND_ROBIN) {
+                    stageActionsHtml = `<button class="btn btn-primary btn-sm" onclick="generateRoundRobinMatches(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Generate Matches</button>`;
+                }
+
+
                 stageCard.innerHTML = `
                     <div class="flex-between">
                         <h4>${stage.name} (${stage.type})</h4>
                         <div class="btn-group">
-                            ${stage.type === TOURNAMENT_TYPES.GROUP_STAGE ?
-                                `<button class="btn btn-primary btn-sm" onclick="generateMultiStageGroups(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Generate Groups</button>
-                                <button class="btn btn-secondary btn-sm" onclick="advanceQualifiersToKnockout(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Advance Qualifiers</button>` :
-                                `<button class="btn btn-primary btn-sm" onclick="generateEliminationBracket(tournaments.find(t => t.id === currentTournamentId), '${TOURNAMENT_TYPES.SINGLE_ELIMINATION}', '${stage.id}')">Generate Bracket</button>`
-                            }
+                            <button class="btn btn-outline btn-sm" onclick="openAdvanceParticipantsModal('${stage.id}')">Add Teams</button>
+                            ${stageActionsHtml}
                         </div>
                     </div>
                     <p>Teams: ${stage.participants.length} / ${tournament.participants.length}</p>
@@ -4088,21 +4179,26 @@
                 // For Multi-Stage, stages are predefined, so we just render them
                 renderMultiStages(tournament);
                 // Hide generic add/delete buttons
-                document.getElementById('manageStagesActions').innerHTML = '';
+                const manageStagesActionsDiv = document.getElementById('manageStagesActions');
+                if (manageStagesActionsDiv) manageStagesActionsDiv.innerHTML = '';
             } else {
                 // For other types, allow generic stage management
                 renderCurrentStagesList();
-                document.getElementById('manageStagesActions').innerHTML = '<button id="addStageBtn" class="btn btn-primary">Add New Stage</button>';
-                document.getElementById('addStageBtn').onclick = openAddStageModal;
+                const manageStagesActionsDiv = document.getElementById('manageStagesActions');
+                if (manageStagesActionsDiv) {
+                    manageStagesActionsDiv.innerHTML = '<button id="addStageBtn" class="btn btn-primary">Add New Stage</button>';
+                    document.getElementById('addStageBtn').onclick = openAddStageModal;
+                }
             }
             openModal('manageStagesModal');
         }
 
         function renderCurrentStagesList() {
             const listDiv = document.getElementById('currentStagesList');
+            if (!listDiv) return; // Ensure element exists
             listDiv.innerHTML = '';
             const tournament = tournaments.find(t => t.id === currentTournamentId);
-            if (!tournament || tournament.stages.length === 0) {
+            if (!tournament || !tournament.stages || tournament.stages.length === 0) {
                 listDiv.innerHTML = '<p class="no-data">No stages added yet.</p>';
                 return;
             }
@@ -4258,6 +4354,7 @@
 
             document.getElementById('advanceStageId').value = stageId;
             const availableParticipantsList = document.getElementById('availableParticipantsList');
+            if (!availableParticipantsList) return; // Ensure element exists
             availableParticipantsList.innerHTML = '';
 
             tournament.participants.forEach(p => {
@@ -4303,26 +4400,48 @@
             // Reset all player and team stats first
             tournament.participants.forEach(team => {
                 // Reset team-level stats
-                team.teamStats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
-                tournament.settings.playerStatsFields.forEach(field => team.teamStats[field] = 0);
+                team.teamStats.matchesPlayed = 0;
+                tournament.settings.playerStatsFields.forEach(field => team.teamStats.custom[field] = 0);
 
                 // Reset individual player stats
                 team.players.forEach(player => {
-                    player.stats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
-                    tournament.settings.playerStatsFields.forEach(field => player.stats[field] = 0);
+                    player.stats.matchesPlayed = 0;
+                    tournament.settings.playerStatsFields.forEach(field => player.stats.custom[field] = 0);
                 });
             });
 
             // Helper to process matches from any bracket/list
-            const processMatches = (matches, participantsInScope) => {
+            const processMatches = (matches) => {
+                if (!matches) return; // Ensure matches array exists
                 matches.forEach(match => {
                     if (match.status === 'Completed') {
+                        // Determine participants in scope for this specific match
+                        let participantsInScope = tournament.participants;
+                        if (match.stageId) {
+                            const stage = tournament.stages.find(s => s.id === match.stageId);
+                            if (stage) {
+                                participantsInScope = tournament.participants.filter(p => stage.participants.includes(p.id));
+                            }
+                        }
+                        if (match.groupId) {
+                            let group;
+                            if (match.stageId) { // Group within a stage
+                                const stage = tournament.stages.find(s => s.id === match.stageId);
+                                group = stage?.groups.find(g => g.id === match.groupId);
+                            } else { // Group in main tournament
+                                group = tournament.groups.find(g => g.id === match.groupId);
+                            }
+                            if (group) {
+                                participantsInScope = tournament.participants.filter(p => group.participants.includes(p.id));
+                            }
+                        }
+
                         const team1 = participantsInScope.find(p => p.id === match.player1Id);
                         const team2 = participantsInScope.find(p => p.id === match.player2Id);
 
                         if (!team1 || !team2) return; // Skip if teams not found (e.g., BYE)
 
-                        // Aggregate team-level stats
+                        // Aggregate team-level matches played
                         team1.teamStats.matchesPlayed = (team1.teamStats.matchesPlayed || 0) + 1;
                         team2.teamStats.matchesPlayed = (team2.teamStats.matchesPlayed || 0) + 1;
 
@@ -4332,8 +4451,8 @@
                             if (player) {
                                 player.stats.matchesPlayed = (player.stats.matchesPlayed || 0) + 1;
                                 tournament.settings.playerStatsFields.forEach(field => {
-                                    player.stats[field] = (player.stats[field] || 0) + (matchPlayerStat[field] || 0);
-                                    team1.teamStats[field] = (team1.teamStats[field] || 0) + (matchPlayerStat[field] || 0); // Also aggregate to team total
+                                    player.stats.custom[field] = (player.stats.custom[field] || 0) + (matchPlayerStat[field] || 0);
+                                    team1.teamStats.custom[field] = (team1.teamStats.custom[field] || 0) + (matchPlayerStat[field] || 0); // Also aggregate to team total
                                 });
                             }
                         });
@@ -4344,8 +4463,8 @@
                             if (player) {
                                 player.stats.matchesPlayed = (player.stats.matchesPlayed || 0) + 1;
                                 tournament.settings.playerStatsFields.forEach(field => {
-                                    player.stats[field] = (player.stats[field] || 0) + (matchPlayerStat[field] || 0);
-                                    team2.teamStats[field] = (team2.teamStats[field] || 0) + (matchPlayerStat[field] || 0); // Also aggregate to team total
+                                    player.stats.custom[field] = (player.stats.custom[field] || 0) + (matchPlayerStat[field] || 0);
+                                    team2.teamStats.custom[field] = (team2.teamStats.custom[field] || 0) + (matchPlayerStat[field] || 0); // Also aggregate to team total
                                 });
                             }
                         });
@@ -4354,20 +4473,19 @@
             };
 
             // Process matches from main tournament brackets/lists
-            if (tournament.rounds) tournament.rounds.forEach(r => processMatches(r.matches, tournament.participants));
-            if (tournament.winnerBracket) tournament.winnerBracket.forEach(r => processMatches(r.matches, tournament.participants));
-            if (tournament.loserBracket) tournament.loserBracket.forEach(r => processMatches(r.matches, tournament.participants));
-            if (tournament.grandFinal) tournament.grandFinal.forEach(r => processMatches(r.matches, tournament.participants));
-            if (tournament.matches) processMatches(tournament.matches, tournament.participants);
-            if (tournament.groups) tournament.groups.forEach(g => processMatches(g.matches, tournament.participants.filter(p => g.participants.includes(p.id))));
+            if (tournament.rounds) tournament.rounds.forEach(r => processMatches(r.matches));
+            if (tournament.winnerBracket) tournament.winnerBracket.forEach(r => processMatches(r.matches));
+            if (tournament.loserBracket) tournament.loserBracket.forEach(r => processMatches(r.matches));
+            if (tournament.grandFinal) tournament.grandFinal.forEach(r => processMatches(r.matches));
+            if (tournament.matches) processMatches(tournament.matches);
+            if (tournament.groups) tournament.groups.forEach(g => processMatches(g.matches));
 
             // Process matches from stages
             if (tournament.stages) {
                 tournament.stages.forEach(stage => {
-                    const stageParticipants = tournament.participants.filter(p => stage.participants.includes(p.id));
-                    if (stage.matches) processMatches(stage.matches, stageParticipants);
-                    if (stage.rounds) stage.rounds.forEach(r => processMatches(r.matches, stageParticipants));
-                    if (stage.groups) stage.groups.forEach(g => processMatches(g.matches, tournament.participants.filter(p => g.participants.includes(p.id))));
+                    if (stage.matches) processMatches(stage.matches);
+                    if (stage.rounds) stage.rounds.forEach(r => processMatches(r.matches));
+                    if (stage.groups) stage.groups.forEach(g => processMatches(g.matches));
                 });
             }
             saveData(); // Save updated aggregated stats
@@ -4375,6 +4493,7 @@
 
         function renderPlayerLeaderboards(tournament) {
             const leaderboardsDiv = document.getElementById('playerLeaderboardsDisplay');
+            if (!leaderboardsDiv) return; // Ensure element exists
             leaderboardsDiv.innerHTML = '';
 
             if (tournament.participants.length === 0) {
@@ -4382,7 +4501,7 @@
                 return;
             }
 
-            if (tournament.settings.playerStatsFields.length === 0) {
+            if (!tournament.settings.playerStatsFields || tournament.settings.playerStatsFields.length === 0) {
                 leaderboardsDiv.innerHTML = '<p class="no-data">No custom player stats fields defined for this tournament.</p>';
                 return;
             }
@@ -4419,8 +4538,8 @@
                 const tbody = leaderboardTable.querySelector('tbody');
 
                 const sortedPlayers = [...allPlayers].sort((a, b) => {
-                    const statA = a.stats[field] || 0;
-                    const statB = b.stats[field] || 0;
+                    const statA = a.stats.custom[field] || 0;
+                    const statB = b.stats.custom[field] || 0;
                     return statB - statA; // Descending order
                 });
 
@@ -4430,7 +4549,7 @@
                         <td class="rank">${index + 1}</td>
                         <td>${player.name}</td>
                         <td>${player.teamName}</td>
-                        <td>${player.stats[field] || 0}</td>
+                        <td>${player.stats.custom[field] || 0}</td>
                         <td>${player.stats.matchesPlayed || 0}</td>
                     `;
                     tbody.appendChild(row);
@@ -4507,6 +4626,7 @@
             if (!tournament) return;
 
             const qrCodeContainer = document.getElementById('qrCodeContainer');
+            if (!qrCodeContainer) return; // Ensure element exists
             qrCodeContainer.innerHTML = ''; // Clear previous QR code
 
             // Use the inlined QRCode generator

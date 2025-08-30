@@ -253,6 +253,10 @@
             margin-top: 20px;
             flex-wrap: wrap;
         }
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
 
         /* --- Lists & Cards --- */
         .tournament-list {
@@ -353,7 +357,7 @@
             padding: 0;
         }
 
-        .participant-item, .match-item {
+        .participant-item, .match-item, .player-item { /* Added .player-item */
             background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
@@ -366,12 +370,12 @@
             gap: 10px;
         }
 
-        .participant-item .actions, .match-item .actions {
+        .participant-item .actions, .match-item .actions, .player-item .actions {
             display: flex;
             gap: 8px;
         }
 
-        .participant-item .actions .btn, .match-item .actions .btn {
+        .participant-item .actions .btn, .match-item .actions .btn, .player-item .actions .btn {
             padding: 8px 12px;
             font-size: 0.9em;
         }
@@ -872,7 +876,7 @@
                         <option value="Double Elimination">Double Elimination</option>
                         <option value="Round Robin">Round Robin</option>
                         <option value="Multi-Stage">Multi-Stage</option>
-                        <option value="Group Stage">Group Stage</option> <!-- NEW -->
+                        <option value="Group Stage">Group Stage</option>
                         <option value="Swiss System">Swiss System</option>
                         <option value="GSL Format">GSL Format</option>
                         <option value="Ladder">Ladder</option>
@@ -927,7 +931,7 @@
                                 <option value="Double Elimination">Double Elimination</option>
                                 <option value="Round Robin">Round Robin</option>
                                 <option value="Multi-Stage">Multi-Stage</option>
-                                <option value="Group Stage">Group Stage</option> <!-- NEW -->
+                                <option value="Group Stage">Group Stage</option>
                                 <option value="Swiss System">Swiss System</option>
                                 <option value="GSL Format">GSL Format</option>
                                 <option value="Ladder">Ladder</option>
@@ -942,7 +946,7 @@
                             <input type="date" id="tournamentEndDate">
                         </div>
                         <div class="form-group">
-                            <label for="tournamentMaxParticipants">Max Participants</label>
+                            <label for="tournamentMaxParticipants">Max Participants (Teams)</label>
                             <input type="number" id="tournamentMaxParticipants" min="2" placeholder="Optional">
                         </div>
                         <div class="form-group">
@@ -1009,7 +1013,6 @@
                         </div>
                     </div>
 
-                    <!-- NEW: Group Stage Settings -->
                     <div id="groupStageSettings" class="hidden">
                         <h3>Group Stage Specific Settings</h3>
                         <div class="form-grid">
@@ -1046,7 +1049,47 @@
                         </div>
                     </div>
 
-                    <!-- Placeholders for future tournament types -->
+                    <div id="multiStageSettings" class="hidden">
+                        <h3>Multi-Stage Specific Settings (for initial Group Stage)</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="multiStageGroupsCount">Number of Groups <span style="color:red">*</span></label>
+                                <input type="number" id="multiStageGroupsCount" min="1" value="4" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="multiStageAdvanceK">Teams to Advance per Group <span style="color:red">*</span></label>
+                                <input type="number" id="multiStageAdvanceK" min="1" value="2" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="multiStagePointsWin">Points for Win</label>
+                                <input type="number" id="multiStagePointsWin" value="3" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="multiStagePointsDraw">Points for Draw</label>
+                                <input type="number" id="multiStagePointsDraw" value="1" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="multiStagePointsLoss">Points for Loss</label>
+                                <input type="number" id="multiStagePointsLoss" value="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="multiStageTieBreaker">Tie-breaker Preference</label>
+                                <select id="multiStageTieBreaker">
+                                    <option value="Points">Points (default)</option>
+                                    <option value="Head-to-Head">Head-to-Head</option>
+                                    <option value="Score Difference">Score Difference</option>
+                                    <option value="Score For">Score For</option>
+                                    <option value="Random">Random</option>
+                                </select>
+                            </div>
+                        </div>
+                        <h4>Knockout Stage Settings</h4>
+                        <div class="form-group">
+                            <label for="multiStageKnockoutBestOf">Best-of-N Series for Knockout Matches</label>
+                            <input type="number" id="multiStageKnockoutBestOf" min="1" value="1">
+                        </div>
+                    </div>
+
                     <div id="swissSettings" class="hidden">
                         <h3>Swiss System Specific Settings</h3>
                         <div class="form-group">
@@ -1097,10 +1140,10 @@
 
                 <hr style="margin: 30px 0; border-color: var(--border-color);">
 
-                <h3>Participants (<span id="participantCount">0</span>/<span id="maxParticipants">∞</span>)</h3>
+                <h3>Participants (Teams) (<span id="participantCount">0</span>/<span id="maxParticipants">∞</span>)</h3>
                 <div class="flex-between" style="margin-bottom: 15px;">
                     <div class="flex-gap-10">
-                        <button id="addParticipantBtn" class="btn btn-primary">Add Participant</button>
+                        <button id="addParticipantBtn" class="btn btn-primary">Add Team</button>
                         <button id="bulkImportParticipantsBtn" class="btn btn-secondary">Bulk Import (CSV)</button>
                         <button id="copyParticipantsBtn" class="btn btn-secondary">Copy from Tournament</button>
                     </div>
@@ -1109,7 +1152,7 @@
                         <button id="generateDoubleEliminationBracketBtn" class="btn btn-secondary hidden">Generate DE Bracket</button>
                         <button id="generateRoundRobinBtn" class="btn btn-secondary hidden">Generate Matches</button>
                         <button id="manageStagesBtn" class="btn btn-secondary hidden">Manage Stages</button>
-                        <button id="generateGroupStageBtn" class="btn btn-secondary hidden">Generate Groups</button> <!-- NEW -->
+                        <button id="generateGroupStageBtn" class="btn btn-secondary hidden">Generate Groups</button>
                         <!-- New buttons for future formats -->
                         <button id="generateSwissBtn" class="btn btn-secondary hidden">Generate Swiss Rounds</button>
                         <button id="generateGSLBtn" class="btn btn-secondary hidden">Generate GSL Group</button>
@@ -1117,7 +1160,7 @@
                     </div>
                 </div>
                 <div id="participantsList" class="participants-list">
-                    <p class="no-data">No participants added yet.</p>
+                    <p class="no-data">No teams added yet.</p>
                 </div>
 
                 <hr style="margin: 30px 0; border-color: var(--border-color);">
@@ -1125,23 +1168,23 @@
                 <div id="eliminationBracketSection" class="hidden">
                     <h3>Bracket</h3>
                     <div id="bracketVisualizer" class="bracket-visualizer">
-                        <p class="no-data">Bracket not generated. Add participants and click "Generate Bracket".</p>
+                        <p class="no-data">Bracket not generated. Add teams and click "Generate Bracket".</p>
                     </div>
                 </div>
 
                 <div id="doubleEliminationBracketSection" class="hidden">
                     <h3>Double Elimination Bracket</h3>
                     <div id="doubleEliminationWrapper" class="double-elimination-wrapper">
-                        <p class="no-data">Double Elimination Bracket not generated. Add participants and click "Generate DE Bracket".</p>
+                        <p class="no-data">Double Elimination Bracket not generated. Add teams and click "Generate DE Bracket".</p>
                     </div>
                 </div>
 
                 <div id="roundRobinMatchesSection" class="hidden">
                     <h3>Matches</h3>
                     <div id="roundRobinMatches">
-                        <p class="no-data">Matches not generated. Add participants and click "Generate Matches".</p>
+                        <p class="no-data">Matches not generated. Add teams and click "Generate Matches".</p>
                     </div>
-                    <h3 style="margin-top: 30px;">Standings</h3>
+                    <h3 style="margin-top: 30px;">Team Standings</h3>
                     <div id="roundRobinStandings">
                         <p class="no-data">Standings will appear after matches are generated and scores recorded.</p>
                     </div>
@@ -1154,15 +1197,21 @@
                     </div>
                 </div>
 
-                <!-- NEW: Group Stage Section -->
                 <div id="groupStageSection" class="hidden">
                     <h3>Groups</h3>
                     <div id="groupsDisplay">
-                        <p class="no-data">Groups not generated. Add participants and click "Generate Groups".</p>
+                        <p class="no-data">Groups not generated. Add teams and click "Generate Groups".</p>
                     </div>
+                    <h3 style="margin-top: 30px;">Team Standings</h3>
+                    <div id="groupStageStandingsDisplay">
+                        <p class="no-data">Team standings will appear after matches are played.</p>
+                    </div>
+                </div>
+
+                <div id="playerLeaderboardsSection" class="hidden">
                     <h3 style="margin-top: 30px;">Player Leaderboards</h3>
                     <div id="playerLeaderboardsDisplay">
-                        <p class="no-data">Player stats will appear after matches are played.</p>
+                        <p class="no-data">Player stats will appear after matches are played and player stats are recorded.</p>
                     </div>
                 </div>
 
@@ -1219,15 +1268,15 @@
 
     <!-- Modals -->
 
-    <!-- Add/Edit Participant Modal -->
+    <!-- Add/Edit Participant (Team) Modal -->
     <div id="participantModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal('participantModal')">&times;</span>
-            <h3 id="participantModalTitle">Add Participant</h3>
+            <h3 id="participantModalTitle">Add Team</h3>
             <form id="participantForm">
                 <input type="hidden" id="participantId">
                 <div class="form-group">
-                    <label for="participantName">Name / Team Name <span style="color:red">*</span></label>
+                    <label for="participantName">Team Name <span style="color:red">*</span></label>
                     <input type="text" id="participantName" required>
                 </div>
                 <div class="form-group">
@@ -1247,8 +1296,48 @@
                     <textarea id="participantNotes" rows="2"></textarea>
                 </div>
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">Save Participant</button>
+                    <button type="submit" class="btn btn-primary">Save Team</button>
+                    <button type="button" class="btn btn-secondary" id="managePlayersBtnForTeam">Manage Players</button>
                     <button type="button" class="btn btn-outline" onclick="closeModal('participantModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Players Modal -->
+    <div id="managePlayersModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('managePlayersModal')">&times;</span>
+            <h3 id="managePlayersModalTitle">Manage Players for [Team Name]</h3>
+            <input type="hidden" id="managePlayersTeamId">
+            <div id="playersList" class="participants-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius);">
+                <p class="no-data">No players added to this team yet.</p>
+            </div>
+            <div class="btn-group">
+                <button id="addPlayerBtn" class="btn btn-primary">Add Player</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal('managePlayersModal')">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Player Modal -->
+    <div id="addEditPlayerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('addEditPlayerModal')">&times;</span>
+            <h3 id="addEditPlayerModalTitle">Add Player</h3>
+            <form id="addEditPlayerForm">
+                <input type="hidden" id="addEditPlayerTeamId">
+                <input type="hidden" id="addEditPlayerId">
+                <div class="form-group">
+                    <label for="playerName">Player Name <span style="color:red">*</span></label>
+                    <input type="text" id="playerName" required>
+                </div>
+                <div id="playerInitialStats" class="form-grid">
+                    <!-- Dynamic fields for custom player stats -->
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Save Player</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addEditPlayerModal')">Cancel</button>
                 </div>
             </form>
         </div>
@@ -1299,7 +1388,7 @@
                             <option value="Double Elimination">Double Elimination</option>
                             <option value="Round Robin">Round Robin</option>
                             <option value="Multi-Stage">Multi-Stage</option>
-                            <option value="Group Stage">Group Stage</option> <!-- NEW -->
+                            <option value="Group Stage">Group Stage</option>
                             <option value="Swiss System">Swiss System</option>
                             <option value="GSL Format">GSL Format</option>
                             <option value="Ladder">Ladder</option>
@@ -1314,7 +1403,7 @@
                         <input type="date" id="editTournamentEndDate">
                     </div>
                     <div class="form-group">
-                        <label for="editTournamentMaxParticipants">Max Participants</label>
+                        <label for="editTournamentMaxParticipants">Max Participants (Teams)</label>
                         <input type="number" id="editTournamentMaxParticipants" min="2">
                     </div>
                     <div class="form-group">
@@ -1381,7 +1470,6 @@
                     </div>
                 </div>
 
-                <!-- NEW: Edit Group Stage Settings -->
                 <div id="editGroupStageSettings" class="hidden">
                     <h3>Group Stage Specific Settings</h3>
                     <div class="form-grid">
@@ -1418,7 +1506,47 @@
                     </div>
                 </div>
 
-                <!-- Placeholders for future tournament types -->
+                <div id="editMultiStageSettings" class="hidden">
+                    <h3>Multi-Stage Specific Settings (for initial Group Stage)</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editMultiStageGroupsCount">Number of Groups <span style="color:red">*</span></label>
+                            <input type="number" id="editMultiStageGroupsCount" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editMultiStageAdvanceK">Teams to Advance per Group <span style="color:red">*</span></label>
+                            <input type="number" id="editMultiStageAdvanceK" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editMultiStagePointsWin">Points for Win</label>
+                            <input type="number" id="editMultiStagePointsWin" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="editMultiStagePointsDraw">Points for Draw</label>
+                            <input type="number" id="editMultiStagePointsDraw" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="editMultiStagePointsLoss">Points for Loss</label>
+                            <input type="number" id="editMultiStagePointsLoss" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="editMultiStageTieBreaker">Tie-breaker Preference</label>
+                            <select id="editMultiStageTieBreaker">
+                                <option value="Points">Points (default)</option>
+                                <option value="Head-to-Head">Head-to-Head</option>
+                                <option value="Score Difference">Score Difference</option>
+                                <option value="Score For">Score For</option>
+                                <option value="Random">Random</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h4>Knockout Stage Settings</h4>
+                    <div class="form-group">
+                        <label for="editMultiStageKnockoutBestOf">Best-of-N Series for Knockout Matches</label>
+                        <input type="number" id="editMultiStageKnockoutBestOf" min="1">
+                    </div>
+                </div>
+
                 <div id="editSwissSettings" class="hidden">
                     <h3>Swiss System Specific Settings</h3>
                     <div class="form-group">
@@ -1450,14 +1578,14 @@
     <div id="bulkImportModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal('bulkImportModal')">&times;</span>
-            <h3>Bulk Import Participants (CSV)</h3>
-            <p>Upload a CSV file with participant names. Each name should be on a new line.</p>
+            <h3>Bulk Import Teams (CSV)</h3>
+            <p>Upload a CSV file with team names. Each name should be on a new line.</p>
             <div class="form-group">
                 <label for="bulkImportFileInput">Select CSV File</label>
                 <input type="file" id="bulkImportFileInput" accept=".csv">
             </div>
             <div class="btn-group">
-                <button id="processBulkImportBtn" class="btn btn-primary">Import Participants</button>
+                <button id="processBulkImportBtn" class="btn btn-primary">Import Teams</button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('bulkImportModal')">Cancel</button>
             </div>
         </div>
@@ -1467,7 +1595,7 @@
     <div id="copyParticipantsModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal('copyParticipantsModal')">&times;</span>
-            <h3>Copy Participants from Another Tournament</h3>
+            <h3>Copy Teams from Another Tournament</h3>
             <div class="form-group">
                 <label for="copyFromTournamentSelect">Select Tournament to Copy From</label>
                 <select id="copyFromTournamentSelect">
@@ -1475,7 +1603,7 @@
                 </select>
             </div>
             <div class="btn-group">
-                <button id="processCopyParticipantsBtn" class="btn btn-primary">Copy Participants</button>
+                <button id="processCopyParticipantsBtn" class="btn btn-primary">Copy Teams</button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('copyParticipantsModal')">Cancel</button>
             </div>
         </div>
@@ -1495,11 +1623,11 @@
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="matchDetailsPlayer1">Player 1</label>
+                        <label for="matchDetailsPlayer1">Team 1</label>
                         <input type="text" id="matchDetailsPlayer1" disabled>
                     </div>
                     <div class="form-group">
-                        <label for="matchDetailsPlayer2">Player 2</label>
+                        <label for="matchDetailsPlayer2">Team 2</label>
                         <input type="text" id="matchDetailsPlayer2" disabled>
                     </div>
                     <div class="form-group">
@@ -1525,9 +1653,9 @@
                 </div>
 
                 <div id="matchDetailsPlayerStats" style="margin-top: 20px;">
-                    <h4>Player Stats</h4>
-                    <div id="player1StatsInputs" class="form-grid"></div>
-                    <div id="player2StatsInputs" class="form-grid"></div>
+                    <h4>Individual Player Stats for this Match</h4>
+                    <div id="team1PlayerStatsInputs"></div>
+                    <div id="team2PlayerStatsInputs"></div>
                 </div>
 
                 <div class="btn-group">
@@ -1557,7 +1685,7 @@
             <div id="currentStagesList">
                 <p class="no-data">No stages added yet.</p>
             </div>
-            <div class="btn-group">
+            <div class="btn-group" id="manageStagesActions">
                 <button id="addStageBtn" class="btn btn-primary">Add New Stage</button>
             </div>
         </div>
@@ -1580,7 +1708,7 @@
                         <option value="">Select Type</option>
                         <option value="Single Elimination">Single Elimination</option>
                         <option value="Round Robin">Round Robin</option>
-                        <!-- Add other stage types here if needed -->
+                        <option value="Group Stage">Group Stage</option>
                     </select>
                 </div>
 
@@ -1623,6 +1751,43 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="stageGroupStageSettings" class="hidden">
+                    <h4>Group Stage Specific Settings</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="stageGroupStageGroupsCount">Number of Groups <span style="color:red">*</span></label>
+                            <input type="number" id="stageGroupStageGroupsCount" min="1" value="4" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stageGroupStageAdvanceK">Teams to Advance per Group <span style="color:red">*</span></label>
+                            <input type="number" id="stageGroupStageAdvanceK" min="1" value="2" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stageGroupStagePointsWin">Points for Win</label>
+                            <input type="number" id="stageGroupStagePointsWin" value="3" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stageGroupStagePointsDraw">Points for Draw</label>
+                            <input type="number" id="stageGroupStagePointsDraw" value="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stageGroupStagePointsLoss">Points for Loss</label>
+                            <input type="number" id="stageGroupStagePointsLoss" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stageGroupStageTieBreaker">Tie-breaker Preference</label>
+                            <select id="stageGroupStageTieBreaker">
+                                <option value="Points">Points (default)</option>
+                                <option value="Head-to-Head">Head-to-Head</option>
+                                <option value="Score Difference">Score Difference</option>
+                                <option value="Score For">Score For</option>
+                                <option value="Random">Random</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">Save Stage</button>
                     <button type="button" class="btn btn-outline" onclick="closeModal('stageModal')">Cancel</button>
@@ -1635,14 +1800,14 @@
     <div id="advanceParticipantsModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal('advanceParticipantsModal')">&times;</span>
-            <h3>Advance Participants to Stage</h3>
-            <p>Select participants from the tournament's overall participant list to add to this stage.</p>
+            <h3>Add Teams to Stage</h3>
+            <p>Select teams from the tournament's overall team list to add to this stage.</p>
             <input type="hidden" id="advanceStageId">
             <div id="availableParticipantsList" class="participants-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius);">
                 <!-- Checkboxes for participants -->
             </div>
             <div class="btn-group">
-                <button id="processAdvanceParticipantsBtn" class="btn btn-primary">Add Selected Participants</button>
+                <button id="processAdvanceParticipantsBtn" class="btn btn-primary">Add Selected Teams</button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('advanceParticipantsModal')">Cancel</button>
             </div>
         </div>
@@ -1729,13 +1894,14 @@
         const LS_THEME_KEY = 'tournamentManagerTheme';
         let tournaments = [];
         let currentTournamentId = null;
+        let currentTeamIdForPlayers = null; // New: To track which team's players are being managed
 
         const TOURNAMENT_TYPES = {
             SINGLE_ELIMINATION: 'Single Elimination',
             DOUBLE_ELIMINATION: 'Double Elimination',
             ROUND_ROBIN: 'Round Robin',
             MULTI_STAGE: 'Multi-Stage',
-            GROUP_STAGE: 'Group Stage', // NEW
+            GROUP_STAGE: 'Group Stage',
             SWISS_SYSTEM: 'Swiss System',
             GSL_FORMAT: 'GSL Format',
             LADDER: 'Ladder'
@@ -1761,19 +1927,52 @@
             tournaments = data ? JSON.parse(data) : [];
             // Ensure new fields are initialized for old data
             tournaments.forEach(t => {
-                if (!t.groups) t.groups = []; // For Group Stage
+                if (!t.groups) t.groups = [];
                 if (!t.swissRounds) t.swissRounds = [];
                 if (!t.gslGroups) t.gslGroups = [];
                 if (!t.ladderRanks) t.ladderRanks = [];
-                if (!t.settings.groupStage) t.settings.groupStage = {}; // For Group Stage settings
+                if (!t.settings.groupStage) t.settings.groupStage = {};
+                if (!t.settings.multiStage) t.settings.multiStage = {}; // New for Multi-Stage settings
+
                 t.participants.forEach(p => {
-                    if (!p.stats) {
-                        p.stats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
+                    if (!p.teamStats) { // Renamed from p.stats
+                        p.teamStats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
                     }
+                    if (!p.players) { // New: Array for individual players
+                        p.players = [];
+                    }
+                    // Ensure player stats are initialized
+                    p.players.forEach(player => {
+                        if (!player.stats) {
+                            player.stats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
+                        }
+                    });
+                });
+
+                // Initialize new match stats structure for old matches
+                if (t.rounds) t.rounds.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
+                if (t.winnerBracket) t.winnerBracket.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
+                if (t.loserBracket) t.loserBracket.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
+                if (t.grandFinal) t.grandFinal.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
+                if (t.matches) t.matches.forEach(m => initializeMatchPlayerStats(m));
+                if (t.groups) t.groups.forEach(g => g.matches.forEach(m => initializeMatchPlayerStats(m)));
+                if (t.stages) t.stages.forEach(s => {
+                    if (s.matches) s.matches.forEach(m => initializeMatchPlayerStats(m));
+                    if (s.rounds) s.rounds.forEach(r => r.matches.forEach(m => initializeMatchPlayerStats(m)));
+                    if (s.groups) s.groups.forEach(g => g.matches.forEach(m => initializeMatchPlayerStats(m)));
                 });
             });
             renderTournamentList();
         }
+
+        function initializeMatchPlayerStats(match) {
+            if (!match.team1MatchPlayerStats) match.team1MatchPlayerStats = [];
+            if (!match.team2MatchPlayerStats) match.team2MatchPlayerStats = [];
+            // Remove old player1Stats/player2Stats if they exist and are not arrays
+            if (match.player1Stats && !Array.isArray(match.player1Stats)) delete match.player1Stats;
+            if (match.player2Stats && !Array.isArray(match.player2Stats)) delete match.player2Stats;
+        }
+
 
         function showSection(sectionId) {
             document.querySelectorAll('.content-section').forEach(section => {
@@ -1840,14 +2039,14 @@
                 name, sport, type, startDate, endDate, description,
                 maxParticipants, entryFee, prizePool,
                 status: TOURNAMENT_STATUS.UPCOMING,
-                participants: [], // Overall tournament participants
+                participants: [], // Overall tournament teams
                 rounds: [], // For single elimination
                 winnerBracket: [], // For double elimination
                 loserBracket: [], // For double elimination
                 grandFinal: [], // For double elimination
                 matches: [], // For round robin
                 stages: [], // For multi-stage
-                groups: [], // NEW: For Group Stage
+                groups: [], // For Group Stage
                 swissRounds: [],
                 gslGroups: [],
                 ladderRanks: [],
@@ -1855,7 +2054,8 @@
                     setBasedScoring,
                     playerStatsFields,
                     bestOf: 1, // Default for elimination
-                    groupStage: {} // NEW: Group Stage specific settings
+                    groupStage: {},
+                    multiStage: {} // New for Multi-Stage settings
                 }
             };
 
@@ -1867,13 +2067,52 @@
                 newTournament.settings.pointsDraw = parseInt(document.getElementById('rrPointsDraw').value) || 1;
                 newTournament.settings.pointsLoss = parseInt(document.getElementById('rrPointsLoss').value) || 0;
                 newTournament.settings.tieBreaker = document.getElementById('rrTieBreaker').value || 'Points';
-            } else if (type === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+            } else if (type === TOURNAMENT_TYPES.GROUP_STAGE) {
                 newTournament.settings.groupStage.groupsCount = parseInt(document.getElementById('groupStageGroupsCount').value) || 1;
                 newTournament.settings.groupStage.advanceK = parseInt(document.getElementById('groupStageAdvanceK').value) || 1;
                 newTournament.settings.groupStage.pointsWin = parseInt(document.getElementById('groupStagePointsWin').value) || 3;
                 newTournament.settings.groupStage.pointsDraw = parseInt(document.getElementById('groupStagePointsDraw').value) || 1;
                 newTournament.settings.groupStage.pointsLoss = parseInt(document.getElementById('groupStagePointsLoss').value) || 0;
                 newTournament.settings.groupStage.tieBreaker = document.getElementById('groupStageTieBreaker').value || 'Points';
+            } else if (type === TOURNAMENT_TYPES.MULTI_STAGE) { // NEW: Multi-Stage specific settings
+                newTournament.settings.multiStage.groupsCount = parseInt(document.getElementById('multiStageGroupsCount').value) || 1;
+                newTournament.settings.multiStage.advanceK = parseInt(document.getElementById('multiStageAdvanceK').value) || 1;
+                newTournament.settings.multiStage.pointsWin = parseInt(document.getElementById('multiStagePointsWin').value) || 3;
+                newTournament.settings.multiStage.pointsDraw = parseInt(document.getElementById('multiStagePointsDraw').value) || 1;
+                newTournament.settings.multiStage.pointsLoss = parseInt(document.getElementById('multiStagePointsLoss').value) || 0;
+                newTournament.settings.multiStage.tieBreaker = document.getElementById('multiStageTieBreaker').value || 'Points';
+                newTournament.settings.multiStage.knockoutBestOf = parseInt(document.getElementById('multiStageKnockoutBestOf').value) || 1;
+
+                // Predefine Group Stage and Knockout Stage
+                newTournament.stages.push({
+                    id: generateUniqueId(),
+                    name: 'Group Stage',
+                    type: TOURNAMENT_TYPES.GROUP_STAGE,
+                    participants: [], // Will be populated with all tournament participants
+                    groups: [],
+                    settings: { // Inherit/copy from multiStage settings
+                        groupsCount: newTournament.settings.multiStage.groupsCount,
+                        advanceK: newTournament.settings.multiStage.advanceK,
+                        pointsWin: newTournament.settings.multiStage.pointsWin,
+                        pointsDraw: newTournament.settings.multiStage.pointsDraw,
+                        pointsLoss: newTournament.settings.multiStage.pointsLoss,
+                        tieBreaker: newTournament.settings.multiStage.tieBreaker,
+                        setBasedScoring: newTournament.settings.setBasedScoring,
+                        playerStatsFields: newTournament.settings.playerStatsFields
+                    }
+                });
+                newTournament.stages.push({
+                    id: generateUniqueId(),
+                    name: 'Knockout Stage',
+                    type: TOURNAMENT_TYPES.SINGLE_ELIMINATION,
+                    participants: [], // Will be populated by qualifiers
+                    rounds: [],
+                    settings: { // Inherit/copy from multiStage settings
+                        bestOf: newTournament.settings.multiStage.knockoutBestOf,
+                        setBasedScoring: newTournament.settings.setBasedScoring,
+                        playerStatsFields: newTournament.settings.playerStatsFields
+                    }
+                });
             } else if (type === TOURNAMENT_TYPES.SWISS_SYSTEM) {
                 newTournament.settings.swissRounds = parseInt(document.getElementById('swissRounds').value) || 5;
                 // Add more Swiss settings here
@@ -1917,7 +2156,7 @@
                     <h3>${tournament.name}</h3>
                     <p><strong>Sport:</strong> ${tournament.sport}</p>
                     <p><strong>Type:</strong> ${tournament.type}</p>
-                    <p><strong>Participants:</strong> ${tournament.participants.length} ${tournament.maxParticipants ? `/ ${tournament.maxParticipants}` : ''}</p>
+                    <p><strong>Teams:</strong> ${tournament.participants.length} ${tournament.maxParticipants ? `/ ${tournament.maxParticipants}` : ''}</p>
                     <span class="status ${tournament.status.toLowerCase().replace(' ', '-')}">${tournament.status}</span>
                 `;
                 card.onclick = () => viewTournamentDetails(tournament.id);
@@ -1943,7 +2182,7 @@
                 <div class="tournament-info-item"><strong>Status:</strong> <span class="status ${tournament.status.toLowerCase().replace(' ', '-')}">${tournament.status}</span></div>
                 <div class="tournament-info-item"><strong>Start Date:</strong> ${tournament.startDate || 'N/A'}</div>
                 <div class="tournament-info-item"><strong>End Date:</strong> ${tournament.endDate || 'N/A'}</div>
-                <div class="tournament-info-item"><strong>Max Participants:</strong> ${tournament.maxParticipants || 'Unlimited'}</div>
+                <div class="tournament-info-item"><strong>Max Teams:</strong> ${tournament.maxParticipants || 'Unlimited'}</div>
                 <div class="tournament-info-item"><strong>Entry Fee:</strong> $${tournament.entryFee.toFixed(2)}</div>
                 <div class="tournament-info-item"><strong>Prize Pool:</strong> $${tournament.prizePool.toFixed(2)}</div>
                 <div class="tournament-info-item" style="grid-column: 1 / -1;"><strong>Description:</strong> ${tournament.description || 'No description.'}</div>
@@ -1960,12 +2199,21 @@
                     <div class="tournament-info-item"><strong>Tie-breaker:</strong> ${tournament.settings.tieBreaker}</div>
                 `;
             }
-            if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+            if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) {
                 infoDisplay.innerHTML += `
                     <div class="tournament-info-item"><strong>Groups:</strong> ${tournament.settings.groupStage.groupsCount}</div>
                     <div class="tournament-info-item"><strong>Advance:</strong> ${tournament.settings.groupStage.advanceK} per group</div>
                     <div class="tournament-info-item"><strong>Points (W/D/L):</strong> ${tournament.settings.groupStage.pointsWin}/${tournament.settings.groupStage.pointsDraw}/${tournament.settings.groupStage.pointsLoss}</div>
                     <div class="tournament-info-item"><strong>Tie-breaker:</strong> ${tournament.settings.groupStage.tieBreaker}</div>
+                `;
+            }
+            if (tournament.type === TOURNAMENT_TYPES.MULTI_STAGE) { // NEW: Multi-Stage settings display
+                infoDisplay.innerHTML += `
+                    <div class="tournament-info-item"><strong>Group Stage Groups:</strong> ${tournament.settings.multiStage.groupsCount}</div>
+                    <div class="tournament-info-item"><strong>Group Stage Advance:</strong> ${tournament.settings.multiStage.advanceK} per group</div>
+                    <div class="tournament-info-item"><strong>Group Stage Points (W/D/L):</strong> ${tournament.settings.multiStage.pointsWin}/${tournament.settings.multiStage.pointsDraw}/${tournament.settings.multiStage.pointsLoss}</div>
+                    <div class="tournament-info-item"><strong>Group Stage Tie-breaker:</strong> ${tournament.settings.multiStage.tieBreaker}</div>
+                    <div class="tournament-info-item"><strong>Knockout Best-of-N:</strong> ${tournament.settings.multiStage.knockoutBestOf}</div>
                 `;
             }
             if (tournament.type === TOURNAMENT_TYPES.SWISS_SYSTEM) {
@@ -1982,16 +2230,17 @@
             document.getElementById('doubleEliminationBracketSection').classList.add('hidden');
             document.getElementById('roundRobinMatchesSection').classList.add('hidden');
             document.getElementById('multiStageContainer').classList.add('hidden');
-            document.getElementById('groupStageSection').classList.add('hidden'); // NEW
+            document.getElementById('groupStageSection').classList.add('hidden');
             document.getElementById('swissSection').classList.add('hidden');
             document.getElementById('gslSection').classList.add('hidden');
             document.getElementById('ladderSection').classList.add('hidden');
+            document.getElementById('playerLeaderboardsSection').classList.add('hidden'); // Always show if player stats fields exist
 
             document.getElementById('generateBracketBtn').classList.add('hidden');
             document.getElementById('generateDoubleEliminationBracketBtn').classList.add('hidden');
             document.getElementById('generateRoundRobinBtn').classList.add('hidden');
             document.getElementById('manageStagesBtn').classList.add('hidden');
-            document.getElementById('generateGroupStageBtn').classList.add('hidden'); // NEW
+            document.getElementById('generateGroupStageBtn').classList.add('hidden');
             document.getElementById('generateSwissBtn').classList.add('hidden');
             document.getElementById('generateGSLBtn').classList.add('hidden');
             document.getElementById('manageLadderBtn').classList.add('hidden');
@@ -2014,11 +2263,11 @@
                 document.getElementById('multiStageContainer').classList.remove('hidden');
                 document.getElementById('manageStagesBtn').classList.remove('hidden');
                 renderMultiStages(tournament);
-            } else if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+            } else if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) {
                 document.getElementById('groupStageSection').classList.remove('hidden');
                 document.getElementById('generateGroupStageBtn').classList.remove('hidden');
-                renderGroupStage(tournament);
-                renderPlayerLeaderboards(tournament);
+                generateGroupStage(tournament); // Call generateGroupStage directly for this type
+                // Team standings for Group Stage are rendered within renderGroupStage
             } else if (tournament.type === TOURNAMENT_TYPES.SWISS_SYSTEM) {
                 document.getElementById('swissSection').classList.remove('hidden');
                 document.getElementById('generateSwissBtn').classList.remove('hidden');
@@ -2032,6 +2281,14 @@
                 document.getElementById('ladderSection').classList.remove('hidden');
                 document.getElementById('manageLadderBtn').classList.remove('hidden');
                 // renderLadder(tournament); // Placeholder
+            }
+
+            // Always render player leaderboards if custom fields are defined
+            if (tournament.settings.playerStatsFields && tournament.settings.playerStatsFields.length > 0) {
+                document.getElementById('playerLeaderboardsSection').classList.remove('hidden');
+                renderPlayerLeaderboards(tournament);
+            } else {
+                document.getElementById('playerLeaderboardsSection').classList.add('hidden');
             }
 
             renderParticipantsList(tournament);
@@ -2058,7 +2315,8 @@
             // Hide all specific settings first
             document.getElementById('editEliminationSettings').classList.add('hidden');
             document.getElementById('editRoundRobinSettings').classList.add('hidden');
-            document.getElementById('editGroupStageSettings').classList.add('hidden'); // NEW
+            document.getElementById('editGroupStageSettings').classList.add('hidden');
+            document.getElementById('editMultiStageSettings').classList.add('hidden'); // NEW
             document.getElementById('editSwissSettings').classList.add('hidden');
             document.getElementById('editGslSettings').classList.add('hidden');
             document.getElementById('editLadderSettings').classList.add('hidden');
@@ -2073,7 +2331,7 @@
                 document.getElementById('editRrPointsDraw').value = tournament.settings.pointsDraw;
                 document.getElementById('editRrPointsLoss').value = tournament.settings.pointsLoss;
                 document.getElementById('editRrTieBreaker').value = tournament.settings.tieBreaker;
-            } else if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+            } else if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) {
                 document.getElementById('editGroupStageSettings').classList.remove('hidden');
                 document.getElementById('editGroupStageGroupsCount').value = tournament.settings.groupStage.groupsCount || 1;
                 document.getElementById('editGroupStageAdvanceK').value = tournament.settings.groupStage.advanceK || 1;
@@ -2081,6 +2339,15 @@
                 document.getElementById('editGroupStagePointsDraw').value = tournament.settings.groupStage.pointsDraw || 1;
                 document.getElementById('editGroupStagePointsLoss').value = tournament.settings.groupStage.pointsLoss || 0;
                 document.getElementById('editGroupStageTieBreaker').value = tournament.settings.groupStage.tieBreaker || 'Points';
+            } else if (tournament.type === TOURNAMENT_TYPES.MULTI_STAGE) { // NEW: Multi-Stage settings
+                document.getElementById('editMultiStageSettings').classList.remove('hidden');
+                document.getElementById('editMultiStageGroupsCount').value = tournament.settings.multiStage.groupsCount || 1;
+                document.getElementById('editMultiStageAdvanceK').value = tournament.settings.multiStage.advanceK || 1;
+                document.getElementById('editMultiStagePointsWin').value = tournament.settings.multiStage.pointsWin || 3;
+                document.getElementById('editMultiStagePointsDraw').value = tournament.settings.multiStage.pointsDraw || 1;
+                document.getElementById('editMultiStagePointsLoss').value = tournament.settings.multiStage.pointsLoss || 0;
+                document.getElementById('editMultiStageTieBreaker').value = tournament.settings.multiStage.tieBreaker || 'Points';
+                document.getElementById('editMultiStageKnockoutBestOf').value = tournament.settings.multiStage.knockoutBestOf || 1;
             } else if (tournament.type === TOURNAMENT_TYPES.SWISS_SYSTEM) {
                 document.getElementById('editSwissSettings').classList.remove('hidden');
                 document.getElementById('editSwissRounds').value = tournament.settings.swissRounds || 5;
@@ -2115,13 +2382,44 @@
                 tournament.settings.pointsDraw = parseInt(document.getElementById('editRrPointsDraw').value) || 1;
                 tournament.settings.pointsLoss = parseInt(document.getElementById('editRrPointsLoss').value) || 0;
                 tournament.settings.tieBreaker = document.getElementById('editRrTieBreaker').value || 'Points';
-            } else if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+            } else if (tournament.type === TOURNAMENT_TYPES.GROUP_STAGE) {
                 tournament.settings.groupStage.groupsCount = parseInt(document.getElementById('editGroupStageGroupsCount').value) || 1;
                 tournament.settings.groupStage.advanceK = parseInt(document.getElementById('editGroupStageAdvanceK').value) || 1;
                 tournament.settings.groupStage.pointsWin = parseInt(document.getElementById('editGroupStagePointsWin').value) || 3;
                 tournament.settings.groupStage.pointsDraw = parseInt(document.getElementById('editGroupStagePointsDraw').value) || 1;
                 tournament.settings.groupStage.pointsLoss = parseInt(document.getElementById('editGroupStagePointsLoss').value) || 0;
                 tournament.settings.groupStage.tieBreaker = document.getElementById('editGroupStageTieBreaker').value || 'Points';
+            } else if (tournament.type === TOURNAMENT_TYPES.MULTI_STAGE) { // NEW: Multi-Stage settings
+                tournament.settings.multiStage.groupsCount = parseInt(document.getElementById('editMultiStageGroupsCount').value) || 1;
+                tournament.settings.multiStage.advanceK = parseInt(document.getElementById('editMultiStageAdvanceK').value) || 1;
+                tournament.settings.multiStage.pointsWin = parseInt(document.getElementById('editMultiStagePointsWin').value) || 3;
+                tournament.settings.multiStage.pointsDraw = parseInt(document.getElementById('editMultiStagePointsDraw').value) || 1;
+                tournament.settings.multiStage.pointsLoss = parseInt(document.getElementById('editMultiStagePointsLoss').value) || 0;
+                tournament.settings.multiStage.tieBreaker = document.getElementById('editMultiStageTieBreaker').value || 'Points';
+                tournament.settings.multiStage.knockoutBestOf = parseInt(document.getElementById('editMultiStageKnockoutBestOf').value) || 1;
+
+                // Update settings for the predefined stages if they exist
+                const groupStage = tournament.stages.find(s => s.name === 'Group Stage' && s.type === TOURNAMENT_TYPES.GROUP_STAGE);
+                if (groupStage) {
+                    Object.assign(groupStage.settings, {
+                        groupsCount: tournament.settings.multiStage.groupsCount,
+                        advanceK: tournament.settings.multiStage.advanceK,
+                        pointsWin: tournament.settings.multiStage.pointsWin,
+                        pointsDraw: tournament.settings.multiStage.pointsDraw,
+                        pointsLoss: tournament.settings.multiStage.pointsLoss,
+                        tieBreaker: tournament.settings.multiStage.tieBreaker,
+                        setBasedScoring: tournament.settings.setBasedScoring,
+                        playerStatsFields: tournament.settings.playerStatsFields
+                    });
+                }
+                const knockoutStage = tournament.stages.find(s => s.name === 'Knockout Stage' && s.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION);
+                if (knockoutStage) {
+                    Object.assign(knockoutStage.settings, {
+                        bestOf: tournament.settings.multiStage.knockoutBestOf,
+                        setBasedScoring: tournament.settings.setBasedScoring,
+                        playerStatsFields: tournament.settings.playerStatsFields
+                    });
+                }
             } else if (tournament.type === TOURNAMENT_TYPES.SWISS_SYSTEM) {
                 tournament.settings.swissRounds = parseInt(document.getElementById('editSwissRounds').value) || 5;
             }
@@ -2154,7 +2452,7 @@
             }
         }
 
-        // --- Participant Management ---
+        // --- Participant (Team) Management ---
         function renderParticipantsList(tournament) {
             const listDiv = document.getElementById('participantsList');
             listDiv.innerHTML = '';
@@ -2162,7 +2460,7 @@
             document.getElementById('maxParticipants').textContent = tournament.maxParticipants || '∞';
 
             if (tournament.participants.length === 0) {
-                listDiv.innerHTML = '<p class="no-data">No participants added yet.</p>';
+                listDiv.innerHTML = '<p class="no-data">No teams added yet.</p>';
                 return;
             }
 
@@ -2177,6 +2475,7 @@
                         ${p.seed ? ` (Seed: ${p.seed})` : ''}
                         ${p.rating ? ` (Rating: ${p.rating})` : ''}
                         ${p.contact ? `<br><small>${p.contact}</small>` : ''}
+                        <br><small>Players: ${p.players.length}</small>
                     </div>
                     <div class="actions">
                         <button class="btn btn-secondary" onclick="editParticipant('${p.id}')">Edit</button>
@@ -2188,9 +2487,26 @@
         }
 
         function openAddParticipantModal() {
-            document.getElementById('participantModalTitle').textContent = 'Add Participant';
+            document.getElementById('participantModalTitle').textContent = 'Add Team';
             document.getElementById('participantForm').reset();
             document.getElementById('participantId').value = '';
+            document.getElementById('managePlayersBtnForTeam').classList.add('hidden'); // Hide for new team
+            openModal('participantModal');
+        }
+
+        function editParticipant(participantId) {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const participant = tournament.participants.find(p => p.id === participantId);
+            if (!participant) return;
+
+            document.getElementById('participantModalTitle').textContent = 'Edit Team';
+            document.getElementById('participantId').value = participant.id;
+            document.getElementById('participantName').value = participant.name;
+            document.getElementById('participantSeed').value = participant.seed;
+            document.getElementById('participantRating').value = participant.rating;
+            document.getElementById('participantContact').value = participant.contact;
+            document.getElementById('participantNotes').value = participant.notes;
+            document.getElementById('managePlayersBtnForTeam').classList.remove('hidden'); // Show for existing team
             openModal('participantModal');
         }
 
@@ -2207,17 +2523,17 @@
             const notes = document.getElementById('participantNotes').value;
 
             if (!name) {
-                showAlert('Participant name is required.', 'error');
+                showAlert('Team name is required.', 'error');
                 return;
             }
 
             if (tournament.maxParticipants && tournament.participants.length >= tournament.maxParticipants && !participantId) {
-                showAlert(`Cannot add more participants. Max is ${tournament.maxParticipants}.`, 'error');
+                showAlert(`Cannot add more teams. Max is ${tournament.maxParticipants}.`, 'error');
                 return;
             }
 
             if (participantId) {
-                // Update existing participant
+                // Update existing participant (team)
                 const participant = tournament.participants.find(p => p.id === participantId);
                 if (participant) {
                     participant.name = name;
@@ -2225,20 +2541,19 @@
                     participant.rating = rating;
                     participant.contact = contact;
                     participant.notes = notes;
-                    showAlert('Participant updated successfully!');
+                    showAlert('Team updated successfully!');
                 }
             } else {
-                // Add new participant
+                // Add new participant (team)
                 const newParticipant = {
                     id: generateUniqueId(),
                     name, seed, rating, contact, notes,
-                    // Stats for Round Robin / Swiss / Group Stage
                     wins: 0, losses: 0, draws: 0, scoreFor: 0, scoreAgainst: 0, points: 0,
-                    // NEW: Aggregated player stats
-                    stats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} }
+                    teamStats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} }, // Team-level aggregated stats
+                    players: [] // Individual players within this team
                 };
                 tournament.participants.push(newParticipant);
-                showAlert('Participant added successfully!');
+                showAlert('Team added successfully!');
             }
 
             saveData();
@@ -2247,7 +2562,7 @@
         }
 
         function deleteParticipant(participantId) {
-            if (!confirm('Are you sure you want to delete this participant? This will also reset any generated brackets/matches in all stages.')) {
+            if (!confirm('Are you sure you want to delete this team? This will also clear all generated brackets/matches and player stats.')) {
                 return;
             }
             const tournament = tournaments.find(t => t.id === currentTournamentId);
@@ -2262,14 +2577,15 @@
                 tournament.swissRounds = [];
                 tournament.gslGroups = [];
                 tournament.ladderRanks = [];
-                tournament.groups = []; // NEW
+                tournament.groups = [];
                 tournament.stages.forEach(stage => {
                     stage.participants = stage.participants.filter(pId => pId !== participantId);
                     stage.matches = [];
                     stage.rounds = [];
+                    stage.groups = [];
                 });
                 saveData();
-                showAlert('Participant deleted successfully!', 'danger');
+                showAlert('Team deleted successfully!', 'danger');
                 viewTournamentDetails(currentTournamentId); // Re-render details
             }
         }
@@ -2301,20 +2617,21 @@
                 let addedCount = 0;
                 names.forEach(name => {
                     if (tournament.maxParticipants && tournament.participants.length >= tournament.maxParticipants) {
-                        showAlert(`Max participants reached. Stopped importing at "${name}".`, 'error');
+                        showAlert(`Max teams reached. Stopped importing at "${name}".`, 'error');
                         return;
                     }
                     tournament.participants.push({
                         id: generateUniqueId(),
                         name, seed: null, rating: null, contact: '', notes: '',
                         wins: 0, losses: 0, draws: 0, scoreFor: 0, scoreAgainst: 0, points: 0,
-                        stats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} }
+                        teamStats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} },
+                        players: []
                     });
                     addedCount++;
                 });
 
                 saveData();
-                showAlert(`${addedCount} participants imported successfully!`);
+                showAlert(`${addedCount} teams imported successfully!`);
                 renderParticipantsList(tournament);
                 closeModal('bulkImportModal');
             };
@@ -2338,7 +2655,7 @@
         function processCopyParticipants() {
             const fromTournamentId = document.getElementById('copyFromTournamentSelect').value;
             if (!fromTournamentId) {
-                showAlert('Please select a tournament to copy participants from.', 'error');
+                showAlert('Please select a tournament to copy teams from.', 'error');
                 return;
             }
 
@@ -2353,7 +2670,7 @@
             let copiedCount = 0;
             sourceTournament.participants.forEach(p => {
                 if (targetTournament.maxParticipants && targetTournament.participants.length >= targetTournament.maxParticipants) {
-                    showAlert(`Max participants reached in target tournament. Stopped copying.`, 'error');
+                    showAlert(`Max teams reached in target tournament. Stopped copying.`, 'error');
                     return;
                 }
                 // Only copy if participant name doesn't already exist to avoid duplicates
@@ -2366,21 +2683,173 @@
                         contact: p.contact,
                         notes: p.notes,
                         wins: 0, losses: 0, draws: 0, scoreFor: 0, scoreAgainst: 0, points: 0,
-                        stats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} }
+                        teamStats: { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} },
+                        players: JSON.parse(JSON.stringify(p.players)) // Deep copy players
                     });
                     copiedCount++;
                 }
             });
 
             saveData();
-            showAlert(`${copiedCount} participants copied successfully!`);
+            showAlert(`${copiedCount} teams copied successfully!`);
             renderParticipantsList(targetTournament);
             closeModal('copyParticipantsModal');
         }
 
+        // --- Player Management within a Team ---
+        function openManagePlayersModal(teamId) {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const team = tournament.participants.find(p => p.id === teamId);
+            if (!team) return;
+
+            currentTeamIdForPlayers = teamId;
+            document.getElementById('managePlayersModalTitle').textContent = `Manage Players for ${team.name}`;
+            document.getElementById('managePlayersTeamId').value = teamId;
+            renderPlayersListForTeam(team);
+            openModal('managePlayersModal');
+        }
+
+        function renderPlayersListForTeam(team) {
+            const playersListDiv = document.getElementById('playersList');
+            playersListDiv.innerHTML = '';
+
+            if (team.players.length === 0) {
+                playersListDiv.innerHTML = '<p class="no-data">No players added to this team yet.</p>';
+                return;
+            }
+
+            team.players.forEach(player => {
+                const item = document.createElement('div');
+                item.className = 'player-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>${player.name}</strong>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editPlayer('${team.id}', '${player.id}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletePlayer('${team.id}', '${player.id}')">Delete</button>
+                    </div>
+                `;
+                playersListDiv.appendChild(item);
+            });
+        }
+
+        function openAddPlayerModal() {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            document.getElementById('addEditPlayerModalTitle').textContent = 'Add Player';
+            document.getElementById('addEditPlayerForm').reset();
+            document.getElementById('addEditPlayerTeamId').value = currentTeamIdForPlayers;
+            document.getElementById('addEditPlayerId').value = '';
+
+            const playerInitialStatsDiv = document.getElementById('playerInitialStats');
+            playerInitialStatsDiv.innerHTML = '';
+            tournament.settings.playerStatsFields.forEach(field => {
+                playerInitialStatsDiv.innerHTML += `
+                    <div class="form-group">
+                        <label for="player_initial_stat_${field}">${field}</label>
+                        <input type="number" id="player_initial_stat_${field}" value="0" data-stat-field="${field}">
+                    </div>
+                `;
+            });
+
+            openModal('addEditPlayerModal');
+        }
+
+        function editPlayer(teamId, playerId) {
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const team = tournament.participants.find(p => p.id === teamId);
+            const player = team.players.find(pl => pl.id === playerId);
+            if (!player) return;
+
+            document.getElementById('addEditPlayerModalTitle').textContent = `Edit Player: ${player.name}`;
+            document.getElementById('addEditPlayerForm').reset();
+            document.getElementById('addEditPlayerTeamId').value = teamId;
+            document.getElementById('addEditPlayerId').value = playerId;
+            document.getElementById('playerName').value = player.name;
+
+            const playerInitialStatsDiv = document.getElementById('playerInitialStats');
+            playerInitialStatsDiv.innerHTML = '';
+            tournament.settings.playerStatsFields.forEach(field => {
+                playerInitialStatsDiv.innerHTML += `
+                    <div class="form-group">
+                        <label for="player_initial_stat_${field}">${field}</label>
+                        <input type="number" id="player_initial_stat_${field}" value="${player.stats[field] || 0}" data-stat-field="${field}">
+                    </div>
+                `;
+            });
+
+            openModal('addEditPlayerModal');
+        }
+
+        function addOrUpdatePlayer(event) {
+            event.preventDefault();
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const teamId = document.getElementById('addEditPlayerTeamId').value;
+            const team = tournament.participants.find(p => p.id === teamId);
+            if (!team) return;
+
+            const playerId = document.getElementById('addEditPlayerId').value;
+            const playerName = document.getElementById('playerName').value;
+
+            if (!playerName) {
+                showAlert('Player name is required.', 'error');
+                return;
+            }
+
+            const playerStats = { matchesPlayed: 0 };
+            tournament.settings.playerStatsFields.forEach(field => {
+                playerStats[field] = parseInt(document.getElementById(`player_initial_stat_${field}`).value) || 0;
+            });
+
+            if (playerId) {
+                // Update existing player
+                const player = team.players.find(p => p.id === playerId);
+                if (player) {
+                    player.name = playerName;
+                    // Only update initial stats if they are being edited directly, otherwise aggregated stats will overwrite
+                    // For simplicity, when editing, we're updating the *current aggregated* stats.
+                    // A more robust system might separate initial stats from aggregated stats.
+                    Object.assign(player.stats, playerStats);
+                    showAlert('Player updated successfully!');
+                }
+            } else {
+                // Add new player
+                const newPlayer = {
+                    id: generateUniqueId(),
+                    name: playerName,
+                    stats: playerStats // Initial stats
+                };
+                team.players.push(newPlayer);
+                showAlert('Player added successfully!');
+            }
+
+            saveData();
+            renderPlayersListForTeam(team);
+            closeModal('addEditPlayerModal');
+            updateAggregatedPlayerStats(tournament); // Re-aggregate all stats
+            renderPlayerLeaderboards(tournament);
+        }
+
+        function deletePlayer(teamId, playerId) {
+            if (!confirm('Are you sure you want to delete this player? This will also remove their stats from leaderboards.')) {
+                return;
+            }
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            const team = tournament.participants.find(p => p.id === teamId);
+            if (team) {
+                team.players = team.players.filter(p => p.id !== playerId);
+                saveData();
+                showAlert('Player deleted successfully!', 'danger');
+                renderPlayersListForTeam(team);
+                updateAggregatedPlayerStats(tournament); // Re-aggregate all stats
+                renderPlayerLeaderboards(tournament);
+            }
+        }
+
+
         // --- Elimination Bracket Logic (Common for SE & DE) ---
         function generateEliminationBracket(tournament, bracketType, stageId = null) {
-            let participantsInStage;
+            let participantsInScope;
             let targetBracket;
             let bestOf = tournament.settings.bestOf || 1;
             let confirmMessage;
@@ -2388,12 +2857,12 @@
             if (stageId) {
                 const stage = tournament.stages.find(s => s.id === stageId);
                 if (!stage) return;
-                participantsInStage = tournament.participants.filter(p => stage.participants.includes(p.id));
+                participantsInScope = tournament.participants.filter(p => stage.participants.includes(p.id));
                 targetBracket = stage.rounds;
                 bestOf = stage.settings.bestOf || tournament.settings.bestOf || 1;
                 confirmMessage = `Bracket for stage "${stage.name}" already generated. Regenerating will clear all scores. Continue?`;
             } else {
-                participantsInStage = tournament.participants;
+                participantsInScope = tournament.participants;
                 targetBracket = tournament.rounds;
                 if (bracketType === TOURNAMENT_TYPES.DOUBLE_ELIMINATION) {
                     targetBracket = tournament.winnerBracket;
@@ -2401,8 +2870,8 @@
                 confirmMessage = 'Bracket already generated. Regenerating will clear all scores. Continue?';
             }
 
-            if (participantsInStage.length < 2) {
-                showAlert('Need at least 2 participants to generate a bracket.', 'error');
+            if (participantsInScope.length < 2) {
+                showAlert('Need at least 2 teams to generate a bracket.', 'error');
                 return;
             }
 
@@ -2422,9 +2891,9 @@
             }
 
             // Sort participants by seed, then randomly for unseeded
-            let sortedParticipants = [...participantsInStage].sort((a, b) => {
+            let sortedParticipants = [...participantsInScope].sort((a, b) => {
                 if (a.seed && b.seed) return a.seed - b.seed;
-                if (a.seed) return -1; // Seeded players first
+                if (a.seed) return -1; // Seeded teams first
                 if (b.seed) return 1;
                 return Math.random() - 0.5; // Random for unseeded
             });
@@ -2435,42 +2904,42 @@
             let byes = totalSlots - numParticipants;
 
             let initialBracketParticipants = [];
-            // Place seeds into a standard bracket order (1 vs N, 2 vs N-1, etc.)
-            // This is a simplified version for power-of-2 brackets.
-            // For non-power-of-2, byes are assigned to highest seeds.
             let tempParticipants = [...sortedParticipants];
             let byeParticipants = [];
+
+            // Assign byes to highest seeds
             for(let i=0; i<byes; i++) {
-                byeParticipants.push(tempParticipants.shift()); // Highest seeds get byes
-            }
-
-            // Standard bracket seeding for remaining participants
-            let seededOrder = [];
-            let remaining = tempParticipants.length;
-            let topHalf = tempParticipants.slice(0, Math.ceil(remaining / 2));
-            let bottomHalf = tempParticipants.slice(Math.ceil(remaining / 2));
-            bottomHalf.reverse(); // Reverse bottom half for pairing
-
-            for (let i = 0; i < Math.max(topHalf.length, bottomHalf.length); i++) {
-                if (topHalf[i]) seededOrder.push(topHalf[i]);
-                if (bottomHalf[i]) seededOrder.push(bottomHalf[i]);
-            }
-
-            // Insert byes into the seeded order (e.g., 1st bye at slot 1, 2nd bye at slot 2, etc.)
-            // This is a very basic insertion. A more complex system would place byes strategically.
-            let finalParticipantsForPairing = [];
-            let byeIndex = 0;
-            for(let i=0; i<totalSlots; i++) {
-                if (i < byes) { // Assign byes to the first 'byes' slots
-                    finalParticipantsForPairing.push({ participant: byeParticipants[byeIndex++], bye: true });
-                } else {
-                    finalParticipantsForPairing.push({ participant: seededOrder.shift(), bye: false });
+                if (tempParticipants.length > 0) {
+                    byeParticipants.push(tempParticipants.shift());
                 }
             }
-            // Shuffle non-bye participants to mix them up, keeping byes at the start
-            const nonByeParticipants = finalParticipantsForPairing.filter(p => !p.bye).sort(() => Math.random() - 0.5);
-            finalParticipantsForPairing = finalParticipantsForPairing.filter(p => p.bye).concat(nonByeParticipants);
 
+            // Standard bracket seeding for remaining participants (e.g., 1 vs N, 2 vs N-1)
+            let seededOrder = [];
+            let remaining = tempParticipants.length;
+            if (remaining > 0) {
+                let topHalf = tempParticipants.slice(0, Math.ceil(remaining / 2));
+                let bottomHalf = tempParticipants.slice(Math.ceil(remaining / 2));
+                bottomHalf.reverse(); // Reverse bottom half for pairing
+
+                for (let i = 0; i < Math.max(topHalf.length, bottomHalf.length); i++) {
+                    if (topHalf[i]) seededOrder.push(topHalf[i]);
+                    if (bottomHalf[i]) seededOrder.push(bottomHalf[i]);
+                }
+            }
+
+            // Combine byes and seeded participants for initial round
+            let finalParticipantsForPairing = [];
+            let currentSeededIndex = 0;
+            let currentByeIndex = 0;
+
+            for (let i = 0; i < totalSlots; i++) {
+                if (i < byes) { // First 'byes' slots get byes
+                    finalParticipantsForPairing.push({ participant: byeParticipants[currentByeIndex++], bye: true });
+                } else {
+                    finalParticipantsForPair.push({ participant: seededOrder[currentSeededIndex++], bye: false });
+                }
+            }
 
             // Create initial matches for Round 1
             let round1Matches = [];
@@ -2558,32 +3027,29 @@
             } else {
                 renderDoubleEliminationBracket(tournament);
             }
+            updateAggregatedPlayerStats(tournament); // Update player stats after bracket generation
         }
 
         function createMatchObject(player1Id, player2Id, playerStatsFields, winnerId = null, status = 'Upcoming', bestOf = 1, homePlayerId = null, awayPlayerId = null) {
             const match = {
                 id: generateUniqueId(),
-                player1Id,
-                player2Id,
-                homePlayerId: homePlayerId || player1Id, // Default player1 is home
-                awayPlayerId: awayPlayerId || player2Id, // Default player2 is away
+                player1Id, // This is now a Team ID
+                player2Id, // This is now a Team ID
+                homePlayerId: homePlayerId || player1Id,
+                awayPlayerId: awayPlayerId || player2Id,
                 score1: null,
                 score2: null,
-                sets: null, // For set-based scoring
+                sets: null,
                 winnerId,
                 status,
-                bestOf, // New: Best-of-N series
+                bestOf,
                 date: null,
                 time: null,
                 venue: null,
                 referee: null,
-                player1Stats: {},
-                player2Stats: {}
+                team1MatchPlayerStats: [], // Array of player stats for Team 1 in this match
+                team2MatchPlayerStats: []  // Array of player stats for Team 2 in this match
             };
-            playerStatsFields.forEach(field => {
-                match.player1Stats[field] = null;
-                match.player2Stats[field] = null;
-            });
             return match;
         }
 
@@ -2592,7 +3058,7 @@
             bracketVisualizer.innerHTML = '';
 
             if (roundsArray.length === 0) {
-                bracketVisualizer.innerHTML = '<p class="no-data">Bracket not generated. Add participants and click "Generate Bracket".</p>';
+                bracketVisualizer.innerHTML = '<p class="no-data">Bracket not generated. Add teams and click "Generate Bracket".</p>';
                 return;
             }
 
@@ -2620,7 +3086,7 @@
             deWrapper.innerHTML = '';
 
             if (tournament.winnerBracket.length === 0) {
-                deWrapper.innerHTML = '<p class="no-data">Double Elimination Bracket not generated. Add participants and click "Generate DE Bracket".</p>';
+                deWrapper.innerHTML = '<p class="no-data">Double Elimination Bracket not generated. Add teams and click "Generate DE Bracket".</p>';
                 return;
             }
 
@@ -2682,9 +3148,9 @@
             }
         }
 
-        function createMatchElementHTML(match, tournament, roundIndex, bracketType, stageId = null, groupId = null) { // Added groupId
-            const p1 = tournament.participants.find(p => p.id === match.player1Id);
-            const p2 = tournament.participants.find(p => p.id === match.player2Id);
+        function createMatchElementHTML(match, tournament, roundIndex, bracketType, stageId = null, groupId = null) {
+            const p1 = tournament.participants.find(p => p.id === match.player1Id); // p1 is now team1
+            const p2 = tournament.participants.find(p => p.id === match.player2Id); // p2 is now team2
 
             const scoreInputHtml1 = p1 ? (tournament.settings.setBasedScoring ?
                 `<input type="text" class="sets-input" value="${match.sets !== null ? match.sets.split('-')[0] : ''}" data-player="1" ${match.status !== 'Upcoming' ? 'disabled' : ''}>` :
@@ -2730,10 +3196,16 @@
                 if (bracketType === 'matches') { // RR stage
                     matchesArray = stage.matches;
                     rrSettings = stage.settings;
+                } else if (bracketType === 'groupMatches') { // Group Stage within a Multi-Stage
+                    const group = stage.groups.find(g => g.id === groupId);
+                    if (!group) return;
+                    matchesArray = group.matches;
+                    participantsForMatch = tournament.participants.filter(p => group.participants.includes(p.id));
+                    rrSettings = stage.settings; // Use stage settings for RR within groups
                 } else { // SE stage
                     bracket = stage.rounds;
                 }
-            } else if (groupId) { // NEW: Group Stage
+            } else if (groupId) { // Group Stage tournament type
                 const group = tournament.groups.find(g => g.id === groupId);
                 if (!group) return;
                 matchesArray = group.matches;
@@ -2769,7 +3241,7 @@
                 const sets2 = parseInt(setsInput2.value);
 
                 if (isNaN(sets1) || isNaN(sets2)) {
-                    showAlert('Please enter valid set scores for both players.', 'error');
+                    showAlert('Please enter valid set scores for both teams.', 'error');
                     return;
                 }
                 match.sets = `${sets1}-${sets2}`;
@@ -2782,7 +3254,7 @@
                 score2 = parseInt(scoreInput2.value);
 
                 if (isNaN(score1) || isNaN(score2)) {
-                    showAlert('Please enter valid scores for both players.', 'error');
+                    showAlert('Please enter valid scores for both teams.', 'error');
                     return;
                 }
                 match.score1 = score1;
@@ -2805,8 +3277,8 @@
             }
             match.status = 'Completed';
 
-            // NEW: Update aggregated player stats
-            updateAggregatedPlayerStats(tournament, match, participantsForMatch);
+            // Update aggregated player and team stats
+            updateAggregatedPlayerStats(tournament); // Call with tournament to re-aggregate all
 
             // Logic for advancing winners/losers (only for elimination brackets)
             if (bracketType === 'rounds') { // Single Elimination
@@ -2856,9 +3328,8 @@
             // Re-render relevant sections
             if (stageId) {
                 renderMultiStages(tournament);
-            } else if (groupId) { // NEW: Group Stage
-                renderGroupStage(tournament);
-                renderPlayerLeaderboards(tournament);
+            } else if (groupId) {
+                generateGroupStage(tournament); // Re-render group stage to update standings
             } else if (bracketType === 'rounds') {
                 renderBracket(tournament);
             } else if (bracketType === 'winnerBracket' || bracketType === 'loserBracket' || bracketType === 'grandFinal') {
@@ -2867,6 +3338,7 @@
                 renderRoundRobinMatches(tournament);
                 renderRoundRobinStandings(tournament);
             }
+            renderPlayerLeaderboards(tournament); // Always re-render player leaderboards
         }
 
         function advanceWinner(nextRoundMatches, winnerId) {
@@ -2882,28 +3354,31 @@
                     break;
                 }
             }
-            // If no empty slot found, it means the bracket logic needs to be more robust
-            // For now, we assume slots are available or created.
-            // A more advanced system would pre-create empty matches for future rounds.
         }
 
         // --- Match Details Modal ---
-        function openMatchDetailsModal(matchId, roundIndex, bracketType, stageId = null, groupId = null) { // Added groupId
+        function openMatchDetailsModal(matchId, roundIndex, bracketType, stageId = null, groupId = null) {
             const tournament = tournaments.find(t => t.id === currentTournamentId);
             if (!tournament) return;
 
             let match;
-            let participantsForMatch;
+            let participantsForMatch; // Teams in scope for this match
 
             if (stageId) {
                 const stage = tournament.stages.find(s => s.id === stageId);
+                if (!stage) return;
+                participantsForMatch = tournament.participants.filter(p => stage.participants.includes(p.id));
                 if (bracketType === 'matches') { // RR stage
                     match = stage.matches.find(m => m.id === matchId);
+                } else if (bracketType === 'groupMatches') {
+                    const group = stage.groups.find(g => g.id === groupId);
+                    if (!group) return;
+                    match = group.matches.find(m => m.id === matchId);
+                    participantsForMatch = tournament.participants.filter(p => group.participants.includes(p.id));
                 } else { // SE stage
                     match = stage.rounds[roundIndex].matches.find(m => m.id === matchId);
                 }
-                participantsForMatch = tournament.participants.filter(p => stage.participants.includes(p.id));
-            } else if (groupId) { // NEW: Group Stage
+            } else if (groupId) {
                 const group = tournament.groups.find(g => g.id === groupId);
                 if (!group) return;
                 match = group.matches.find(m => m.id === matchId);
@@ -2919,41 +3394,75 @@
 
             if (!match) return;
 
-            document.getElementById('matchDetailsModalTitle').textContent = `Match: ${participantsForMatch.find(p => p.id === match.player1Id)?.name || 'TBD'} vs ${participantsForMatch.find(p => p.id === match.player2Id)?.name || 'TBD'}`;
+            const team1 = participantsForMatch.find(p => p.id === match.player1Id);
+            const team2 = participantsForMatch.find(p => p.id === match.player2Id);
+
+            document.getElementById('matchDetailsModalTitle').textContent = `Match: ${team1?.name || 'TBD'} vs ${team2?.name || 'TBD'}`;
             document.getElementById('matchDetailsMatchId').value = match.id;
             document.getElementById('matchDetailsRoundIndex').value = roundIndex;
             document.getElementById('matchDetailsBracketType').value = bracketType;
             document.getElementById('matchDetailsStageId').value = stageId;
-            document.getElementById('matchDetailsGroupId').value = groupId; // NEW
+            document.getElementById('matchDetailsGroupId').value = groupId;
 
-            document.getElementById('matchDetailsPlayer1').value = participantsForMatch.find(p => p.id === match.player1Id)?.name || 'BYE';
-            document.getElementById('matchDetailsPlayer2').value = participantsForMatch.find(p => p.id === match.player2Id)?.name || 'BYE';
+            document.getElementById('matchDetailsPlayer1').value = team1?.name || 'BYE';
+            document.getElementById('matchDetailsPlayer2').value = team2?.name || 'BYE';
             document.getElementById('matchDetailsBestOf').value = match.bestOf || 1;
             document.getElementById('matchDetailsDate').value = match.date || '';
             document.getElementById('matchDetailsTime').value = match.time || '';
             document.getElementById('matchDetailsVenue').value = match.venue || '';
             document.getElementById('matchDetailsReferee').value = match.referee || '';
 
-            // Render player stats inputs
-            const player1StatsInputsDiv = document.getElementById('player1StatsInputs');
-            const player2StatsInputsDiv = document.getElementById('player2StatsInputs');
-            player1StatsInputsDiv.innerHTML = `<h4>${participantsForMatch.find(p => p.id === match.player1Id)?.name || 'Player 1'} Stats</h4>`;
-            player2StatsInputsDiv.innerHTML = `<h4>${participantsForMatch.find(p => p.id === match.player2Id)?.name || 'Player 2'} Stats</h4>`;
+            // Render individual player stats inputs
+            const team1PlayerStatsInputsDiv = document.getElementById('team1PlayerStatsInputs');
+            const team2PlayerStatsInputsDiv = document.getElementById('team2PlayerStatsInputs');
+            team1PlayerStatsInputsDiv.innerHTML = '';
+            team2PlayerStatsInputsDiv.innerHTML = '';
 
-            tournament.settings.playerStatsFields.forEach(field => {
-                player1StatsInputsDiv.innerHTML += `
-                    <div class="form-group">
-                        <label for="p1_stat_${field}">${field}</label>
-                        <input type="number" id="p1_stat_${field}" value="${match.player1Stats[field] !== null ? match.player1Stats[field] : ''}" data-player="1" data-stat="${field}">
-                    </div>
-                `;
-                player2StatsInputsDiv.innerHTML += `
-                    <div class="form-group">
-                        <label for="p2_stat_${field}">${field}</label>
-                        <input type="number" id="p2_stat_${field}" value="${match.player2Stats[field] !== null ? match.player2Stats[field] : ''}" data-player="2" data-stat="${field}">
-                    </div>
-                `;
-            });
+            if (tournament.settings.playerStatsFields && tournament.settings.playerStatsFields.length > 0) {
+                document.getElementById('matchDetailsPlayerStats').classList.remove('hidden');
+                if (team1 && team1.players.length > 0) {
+                    team1PlayerStatsInputsDiv.innerHTML += `<h4>${team1.name} Players</h4>`;
+                    team1.players.forEach(player => {
+                        const playerMatchStats = match.team1MatchPlayerStats.find(s => s.playerId === player.id) || {};
+                        let playerHtml = `<div style="margin-bottom: 10px; border: 1px dashed var(--border-color); padding: 10px; border-radius: var(--radius);"><strong>${player.name}</strong><div class="form-grid">`;
+                        tournament.settings.playerStatsFields.forEach(field => {
+                            playerHtml += `
+                                <div class="form-group">
+                                    <label for="p1_${player.id}_stat_${field}">${field}</label>
+                                    <input type="number" id="p1_${player.id}_stat_${field}" value="${playerMatchStats[field] !== undefined ? playerMatchStats[field] : ''}" data-team-id="${team1.id}" data-player-id="${player.id}" data-stat="${field}">
+                                </div>
+                            `;
+                        });
+                        playerHtml += `</div></div>`;
+                        team1PlayerStatsInputsDiv.innerHTML += playerHtml;
+                    });
+                } else if (team1) {
+                    team1PlayerStatsInputsDiv.innerHTML = `<p>No players registered for ${team1.name}.</p>`;
+                }
+
+                if (team2 && team2.players.length > 0) {
+                    team2PlayerStatsInputsDiv.innerHTML += `<h4>${team2.name} Players</h4>`;
+                    team2.players.forEach(player => {
+                        const playerMatchStats = match.team2MatchPlayerStats.find(s => s.playerId === player.id) || {};
+                        let playerHtml = `<div style="margin-bottom: 10px; border: 1px dashed var(--border-color); padding: 10px; border-radius: var(--radius);"><strong>${player.name}</strong><div class="form-grid">`;
+                        tournament.settings.playerStatsFields.forEach(field => {
+                            playerHtml += `
+                                <div class="form-group">
+                                    <label for="p2_${player.id}_stat_${field}">${field}</label>
+                                    <input type="number" id="p2_${player.id}_stat_${field}" value="${playerMatchStats[field] !== undefined ? playerMatchStats[field] : ''}" data-team-id="${team2.id}" data-player-id="${player.id}" data-stat="${field}">
+                                </div>
+                            `;
+                        });
+                        playerHtml += `</div></div>`;
+                        team2PlayerStatsInputsDiv.innerHTML += playerHtml;
+                    });
+                } else if (team2) {
+                    team2PlayerStatsInputsDiv.innerHTML = `<p>No players registered for ${team2.name}.</p>`;
+                }
+            } else {
+                document.getElementById('matchDetailsPlayerStats').classList.add('hidden');
+            }
+
 
             openModal('matchDetailsModal');
         }
@@ -2967,17 +3476,22 @@
             const roundIndex = parseInt(document.getElementById('matchDetailsRoundIndex').value);
             const bracketType = document.getElementById('matchDetailsBracketType').value;
             const stageId = document.getElementById('matchDetailsStageId').value;
-            const groupId = document.getElementById('matchDetailsGroupId').value; // NEW
+            const groupId = document.getElementById('matchDetailsGroupId').value;
 
             let match;
             if (stageId) {
                 const stage = tournament.stages.find(s => s.id === stageId);
+                if (!stage) return;
                 if (bracketType === 'matches') {
                     match = stage.matches.find(m => m.id === matchId);
+                } else if (bracketType === 'groupMatches') {
+                    const group = stage.groups.find(g => g.id === groupId);
+                    if (!group) return;
+                    match = group.matches.find(m => m.id === matchId);
                 } else {
                     match = stage.rounds[roundIndex].matches.find(m => m.id === matchId);
                 }
-            } else if (groupId) { // NEW: Group Stage
+            } else if (groupId) {
                 const group = tournament.groups.find(g => g.id === groupId);
                 if (!group) return;
                 match = group.matches.find(m => m.id === matchId);
@@ -2997,20 +3511,42 @@
             match.venue = document.getElementById('matchDetailsVenue').value;
             match.referee = document.getElementById('matchDetailsReferee').value;
 
-            // Save player stats
-            tournament.settings.playerStatsFields.forEach(field => {
-                match.player1Stats[field] = parseInt(document.getElementById(`p1_stat_${field}`).value) || 0;
-                match.player2Stats[field] = parseInt(document.getElementById(`p2_stat_${field}`).value) || 0;
+            // Save individual player stats for the match
+            match.team1MatchPlayerStats = [];
+            match.team2MatchPlayerStats = [];
+
+            document.querySelectorAll('#team1PlayerStatsInputs input[data-player-id]').forEach(input => {
+                const teamId = input.dataset.teamId;
+                const playerId = input.dataset.playerId;
+                const statField = input.dataset.stat;
+                let playerStatsEntry = match.team1MatchPlayerStats.find(s => s.playerId === playerId);
+                if (!playerStatsEntry) {
+                    playerStatsEntry = { playerId: playerId };
+                    match.team1MatchPlayerStats.push(playerStatsEntry);
+                }
+                playerStatsEntry[statField] = parseInt(input.value) || 0;
+            });
+
+            document.querySelectorAll('#team2PlayerStatsInputs input[data-player-id]').forEach(input => {
+                const teamId = input.dataset.teamId;
+                const playerId = input.dataset.playerId;
+                const statField = input.dataset.stat;
+                let playerStatsEntry = match.team2MatchPlayerStats.find(s => s.playerId === playerId);
+                if (!playerStatsEntry) {
+                    playerStatsEntry = { playerId: playerId };
+                    match.team2MatchPlayerStats.push(playerStatsEntry);
+                }
+                playerStatsEntry[statField] = parseInt(input.value) || 0;
             });
 
             saveData();
             showAlert('Match details updated successfully!');
             closeModal('matchDetailsModal');
+            updateAggregatedPlayerStats(tournament); // Re-aggregate all stats
             if (stageId) {
                 renderMultiStages(tournament);
-            } else if (groupId) { // NEW: Group Stage
-                renderGroupStage(tournament);
-                renderPlayerLeaderboards(tournament);
+            } else if (groupId) {
+                generateGroupStage(tournament); // Re-render group stage to update standings
             } else if (bracketType === 'rounds') {
                 renderBracket(tournament);
             } else if (bracketType === 'winnerBracket' || bracketType === 'loserBracket' || bracketType === 'grandFinal') {
@@ -3019,23 +3555,30 @@
                 renderRoundRobinMatches(tournament);
                 renderRoundRobinStandings(tournament);
             }
+            renderPlayerLeaderboards(tournament); // Always re-render player leaderboards
         }
 
         // --- Round Robin Logic ---
         // Implements the "Circle Method" for scheduling
-        function generateRoundRobinMatches(tournament, stageId = null, group = null) { // Added group parameter
+        function generateRoundRobinMatches(tournament, stageId = null, group = null) {
             let participantsInScope;
             let matchesArray;
             let rrSettings;
             let playerStatsFields = tournament.settings.playerStatsFields;
             let confirmMessage;
 
-            if (group) { // NEW: For a specific group
+            if (group) { // For a specific group (either Group Stage tournament or Multi-Stage Group Stage)
                 participantsInScope = tournament.participants.filter(p => group.participants.includes(p.id));
                 matchesArray = group.matches;
-                rrSettings = tournament.settings.groupStage; // Use group stage settings for RR within groups
+                // Determine rrSettings based on context
+                if (stageId) { // Multi-Stage Group Stage
+                    const stage = tournament.stages.find(s => s.id === stageId);
+                    rrSettings = stage.settings;
+                } else { // Group Stage tournament type
+                    rrSettings = tournament.settings.groupStage;
+                }
                 confirmMessage = `Matches for group "${group.name}" already generated. Regenerating will clear all scores. Continue?`;
-            } else if (stageId) {
+            } else if (stageId) { // For a specific stage (e.g., a Round Robin stage in Multi-Stage)
                 const stage = tournament.stages.find(s => s.id === stageId);
                 if (!stage) return;
                 participantsInScope = tournament.participants.filter(p => stage.participants.includes(p.id));
@@ -3050,12 +3593,12 @@
             }
 
             if (participantsInScope.length < 2) {
-                showAlert('Need at least 2 participants to generate matches.', 'error');
-                return []; // Return empty array if not enough participants
+                showAlert('Need at least 2 teams to generate matches.', 'error');
+                return [];
             }
 
             if (matchesArray.length > 0 && !confirm(confirmMessage)) {
-                return matchesArray; // Return existing matches if user cancels
+                return matchesArray;
             }
 
             // Clear existing matches
@@ -3068,43 +3611,42 @@
                 tournament.matches = [];
             }
 
-            const participants = participantsInScope;
-            let numParticipants = participants.length;
-            let tempParticipants = [...participants];
+            const teams = participantsInScope;
+            let numTeams = teams.length;
+            let tempTeams = [...teams];
 
-            // If odd number of participants, add a "BYE" placeholder
-            const hasBye = numParticipants % 2 !== 0;
+            // If odd number of teams, add a "BYE" placeholder
+            const hasBye = numTeams % 2 !== 0;
             if (hasBye) {
-                tempParticipants.push({ id: 'BYE', name: 'BYE' });
-                numParticipants++; // Adjust count for scheduling
+                tempTeams.push({ id: 'BYE', name: 'BYE' });
+                numTeams++; // Adjust count for scheduling
             }
 
-            const rounds = numParticipants - 1;
+            const rounds = numTeams - 1;
             const allMatches = [];
 
             for (let r = 0; r < rounds; r++) {
-                for (let i = 0; i < numParticipants / 2; i++) {
-                    const p1 = tempParticipants[i];
-                    const p2 = tempParticipants[numParticipants - 1 - i];
+                for (let i = 0; i < numTeams / 2; i++) {
+                    const t1 = tempTeams[i];
+                    const t2 = tempTeams[numTeams - 1 - i];
 
-                    if (p1.id === 'BYE' || p2.id === 'BYE') {
-                        // This is a bye round for one participant, no match generated
+                    if (t1.id === 'BYE' || t2.id === 'BYE') {
                         continue;
                     }
 
-                    // Match 1: p1 vs p2
-                    allMatches.push(createMatchObject(p1.id, p2.id, playerStatsFields, null, 'Upcoming', 1, p1.id, p2.id));
+                    // Match 1: t1 vs t2
+                    allMatches.push(createMatchObject(t1.id, t2.id, playerStatsFields, null, 'Upcoming', 1, t1.id, t2.id));
                     if (rrSettings.enableHomeAway) {
-                        // Match 2: p2 vs p1 (home/away swapped)
-                        allMatches.push(createMatchObject(p2.id, p1.id, playerStatsFields, null, 'Upcoming', 1, p2.id, p1.id));
+                        // Match 2: t2 vs t1 (home/away swapped)
+                        allMatches.push(createMatchObject(t2.id, t1.id, playerStatsFields, null, 'Upcoming', 1, t2.id, t1.id));
                     }
                 }
 
-                // Rotate participants (except the first one)
-                const fixed = tempParticipants[0];
-                const last = tempParticipants.pop();
-                tempParticipants.splice(1, 0, last);
-                tempParticipants[0] = fixed;
+                // Rotate teams (except the first one)
+                const fixed = tempTeams[0];
+                const last = tempTeams.pop();
+                tempTeams.splice(1, 0, last);
+                tempTeams[0] = fixed;
             }
 
             if (group) {
@@ -3118,15 +3660,16 @@
 
             saveData();
             showAlert('Round Robin matches generated successfully!');
-            return allMatches; // Return the generated matches
+            updateAggregatedPlayerStats(tournament); // Update player stats after match generation
+            return allMatches;
         }
 
-        function renderRoundRobinMatches(tournament, targetElementId = 'roundRobinMatches', matchesArray = tournament.matches, participantsArray = tournament.participants, rrSettings = tournament.settings, stageId = null, groupId = null) { // Added groupId
+        function renderRoundRobinMatches(tournament, targetElementId = 'roundRobinMatches', matchesArray = tournament.matches, participantsArray = tournament.participants, rrSettings = tournament.settings, stageId = null, groupId = null) {
             const matchesDiv = document.getElementById(targetElementId);
             matchesDiv.innerHTML = '';
 
             if (matchesArray.length === 0) {
-                matchesDiv.innerHTML = '<p class="no-data">Matches not generated. Add participants and click "Generate Matches".</p>';
+                matchesDiv.innerHTML = '<p class="no-data">Matches not generated. Add teams and click "Generate Matches".</p>';
                 return;
             }
 
@@ -3136,9 +3679,9 @@
                 <thead>
                     <tr>
                         <th>Match</th>
-                        <th>Home Player</th>
+                        <th>Home Team</th>
                         <th>Score</th>
-                        <th>Away Player</th>
+                        <th>Away Team</th>
                         <th>Status</th>
                         <th>Schedule</th>
                         <th>Actions</th>
@@ -3149,10 +3692,10 @@
             const tbody = table.querySelector('tbody');
 
             matchesArray.forEach(match => {
-                const p1 = participantsArray.find(p => p.id === match.player1Id);
-                const p2 = participantsArray.find(p => p.id === match.player2Id);
-                const homePlayer = participantsArray.find(p => p.id === match.homePlayerId);
-                const awayPlayer = participantsArray.find(p => p.id === match.awayPlayerId);
+                const t1 = participantsArray.find(p => p.id === match.player1Id);
+                const t2 = participantsArray.find(p => p.id === match.player2Id);
+                const homeTeam = participantsArray.find(p => p.id === match.homePlayerId);
+                const awayTeam = participantsArray.find(p => p.id === match.awayPlayerId);
 
                 const scoreInputHtml1 = tournament.settings.setBasedScoring ?
                     `<input type="text" class="sets-input" value="${match.sets !== null ? match.sets.split('-')[0] : ''}" data-match-id="${match.id}" data-player="1" ${match.status !== 'Upcoming' ? 'disabled' : ''}>` :
@@ -3163,14 +3706,14 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${homePlayer?.name || 'N/A'} vs ${awayPlayer?.name || 'N/A'}</td>
-                    <td>${homePlayer?.name || 'N/A'}</td>
+                    <td>${homeTeam?.name || 'N/A'} vs ${awayTeam?.name || 'N/A'}</td>
+                    <td>${homeTeam?.name || 'N/A'}</td>
                     <td>
                         ${scoreInputHtml1}
                         -
                         ${scoreInputHtml2}
                     </td>
-                    <td>${awayPlayer?.name || 'N/A'}</td>
+                    <td>${awayTeam?.name || 'N/A'}</td>
                     <td>${match.status}</td>
                     <td>${match.date || 'N/A'} ${match.time || ''}</td>
                     <td>
@@ -3193,9 +3736,9 @@
                 return;
             }
 
-            const participantStats = {};
+            const teamStats = {};
             participantsArray.forEach(p => {
-                participantStats[p.id] = {
+                teamStats[p.id] = {
                     id: p.id,
                     name: p.name,
                     played: 0, wins: 0, losses: 0, draws: 0,
@@ -3204,59 +3747,50 @@
                     points: 0,
                     headToHead: {} // Store head-to-head results
                 };
-                // Initialize custom stats for standings display
-                tournament.settings.playerStatsFields.forEach(field => {
-                    participantStats[p.id][field] = 0;
-                });
             });
 
             matchesArray.forEach(match => {
                 if (match.status === 'Completed') {
-                    const p1Stats = participantStats[match.player1Id];
-                    const p2Stats = participantStats[match.player2Id];
+                    const t1Stats = teamStats[match.player1Id];
+                    const t2Stats = teamStats[match.player2Id];
 
-                    if (!p1Stats || !p2Stats) return; // Should not happen (e.g., BYE participant)
+                    if (!t1Stats || !t2Stats) return; // Should not happen (e.g., BYE participant)
 
                     let score1 = tournament.settings.setBasedScoring ? parseInt(match.sets.split('-')[0]) : match.score1;
                     let score2 = tournament.settings.setBasedScoring ? parseInt(match.sets.split('-')[1]) : match.score2;
 
-                    p1Stats.played++;
-                    p2Stats.played++;
+                    t1Stats.played++;
+                    t2Stats.played++;
 
-                    p1Stats.scoreFor += score1;
-                    p1Stats.scoreAgainst += score2;
-                    p2Stats.scoreFor += score2;
-                    p2Stats.scoreAgainst += score1;
-
-                    tournament.settings.playerStatsFields.forEach(field => {
-                        p1Stats[field] += match.player1Stats[field] || 0;
-                        p2Stats[field] += match.player2Stats[field] || 0;
-                    });
+                    t1Stats.scoreFor += score1;
+                    t1Stats.scoreAgainst += score2;
+                    t2Stats.scoreFor += score2;
+                    t2Stats.scoreAgainst += score1;
 
                     if (match.winnerId === match.player1Id) {
-                        p1Stats.wins++;
-                        p2Stats.losses++;
-                        p1Stats.points += rrSettings.pointsWin;
-                        p2Stats.points += rrSettings.pointsLoss;
-                        p1Stats.headToHead[p2Stats.id] = (p1Stats.headToHead[p2Stats.id] || 0) + 1;
-                        p2Stats.headToHead[p1Stats.id] = (p2Stats.headToHead[p1Stats.id] || 0) - 1;
+                        t1Stats.wins++;
+                        t2Stats.losses++;
+                        t1Stats.points += rrSettings.pointsWin;
+                        t2Stats.points += rrSettings.pointsLoss;
+                        t1Stats.headToHead[t2Stats.id] = (t1Stats.headToHead[t2Stats.id] || 0) + 1;
+                        t2Stats.headToHead[t1Stats.id] = (t2Stats.headToHead[t1Stats.id] || 0) - 1;
                     } else if (match.winnerId === match.player2Id) {
-                        p2Stats.wins++;
-                        p1Stats.losses++;
-                        p2Stats.points += rrSettings.pointsWin;
-                        p1Stats.points += rrSettings.pointsLoss;
-                        p2Stats.headToHead[p1Stats.id] = (p2Stats.headToHead[p1Stats.id] || 0) + 1;
-                        p1Stats.headToHead[p2Stats.id] = (p1Stats.headToHead[p2Stats.id] || 0) - 1;
+                        t2Stats.wins++;
+                        t1Stats.losses++;
+                        t2Stats.points += rrSettings.pointsWin;
+                        t1Stats.points += rrSettings.pointsLoss;
+                        t2Stats.headToHead[t1Stats.id] = (t2Stats.headToHead[t1Stats.id] || 0) + 1;
+                        t1Stats.headToHead[t2Stats.id] = (t1Stats.headToHead[t2Stats.id] || 0) - 1;
                     } else { // Draw
-                        p1Stats.draws++;
-                        p2Stats.draws++;
-                        p1Stats.points += rrSettings.pointsDraw;
-                        p2Stats.points += rrSettings.pointsDraw;
+                        t1Stats.draws++;
+                        t2Stats.draws++;
+                        t1Stats.points += rrSettings.pointsDraw;
+                        t2Stats.points += rrSettings.pointsDraw;
                     }
                 }
             });
 
-            let standings = Object.values(participantStats);
+            let standings = Object.values(teamStats);
 
             // Calculate score difference
             standings.forEach(stats => {
@@ -3270,13 +3804,10 @@
                 // Tie-breaking rules
                 switch (rrSettings.tieBreaker) {
                     case 'Head-to-Head':
-                        // For head-to-head, we need to compare only the matches between a and b
-                        // This is a simplified H2H: just checking who won more direct matches
                         const h2h_a = a.headToHead[b.id] || 0;
                         const h2h_b = b.headToHead[a.id] || 0;
-                        if (h2h_a !== h2h_b) return h2h_a - h2h_b; // Higher value means more wins against opponent
-                        // Fallback to score difference if H2H is tied
-                        return b.scoreDiff - a.scoreDiff;
+                        if (h2h_a !== h2h_b) return h2h_a - h2h_b;
+                        return b.scoreDiff - a.scoreDiff; // Fallback
                     case 'Score Difference':
                         return b.scoreDiff - a.scoreDiff;
                     case 'Score For':
@@ -3293,7 +3824,7 @@
                 <thead>
                     <tr>
                         <th>Rank</th>
-                        <th>Participant</th>
+                        <th>Team</th>
                         <th>P</th>
                         <th>W</th>
                         <th>L</th>
@@ -3301,11 +3832,11 @@
                         <th>GF</th>
                         <th>GA</th>
                         <th>GD</th>
+                        <th>Pts</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             `;
-            tournament.settings.playerStatsFields.forEach(field => {
-                headerHtml += `<th>${field}</th>`;
-            });
-            headerHtml += `<th>Pts</th></tr></thead><tbody></tbody>`;
             table.innerHTML = headerHtml;
             const tbody = table.querySelector('tbody');
 
@@ -3320,27 +3851,185 @@
                     <td>${stats.scoreFor}</td>
                     <td>${stats.scoreAgainst}</td>
                     <td>${stats.scoreDiff}</td>
+                    <td>${stats.points}</td>
                 `;
-                tournament.settings.playerStatsFields.forEach(field => {
-                    rowHtml += `<td>${stats[field]}</td>`;
-                });
-                rowHtml += `<td>${stats.points}</td>`;
 
                 const row = document.createElement('tr');
                 row.innerHTML = rowHtml;
                 tbody.appendChild(row);
             });
             standingsDiv.appendChild(table);
-            return standings; // Return standings for potential use (e.g., qualifiers)
+            return standings;
         }
+
+        // --- NEW: Group Stage Logic (for Group Stage tournament type AND Multi-Stage Group Stage) ---
+        function generateGroupStage(tournament, targetElementId = 'groupsDisplay', groupsArray = tournament.groups, groupStageSettings = tournament.settings.groupStage, stageId = null) {
+            const groupsDisplayDiv = document.getElementById(targetElementId);
+            groupsDisplayDiv.innerHTML = '';
+
+            let participantsInScope = tournament.participants;
+            if (stageId) { // If this is a Group Stage within a Multi-Stage tournament
+                const stage = tournament.stages.find(s => s.id === stageId);
+                if (!stage) return;
+                participantsInScope = tournament.participants.filter(p => stage.participants.includes(p.id));
+                groupStageSettings = stage.settings; // Use stage-specific settings
+                groupsArray = stage.groups;
+            }
+
+            const groupsCount = groupStageSettings.groupsCount;
+            const advanceK = groupStageSettings.advanceK;
+
+            if (participantsInScope.length < groupsCount * 2 && groupsArray.length === 0) { // Only check if no groups generated yet
+                showAlert(`Not enough teams (${participantsInScope.length}) for ${groupsCount} groups. Need at least ${groupsCount * 2}.`, 'error');
+                return;
+            }
+
+            if (groupsArray.length === 0) { // Only generate if not already generated
+                if (!confirm('Groups not generated. Generate now? This will clear existing matches if any.')) {
+                    return;
+                }
+
+                // 1. Split into groups (serpentine seeding)
+                const sortedParticipants = [...participantsInScope].sort((a, b) => (a.seed || Infinity) - (b.seed || Infinity));
+                const newGroups = Array.from({ length: groupsCount }, (_, i) => ({
+                    id: generateUniqueId(),
+                    name: `Group ${String.fromCharCode(65 + i)}`, // A, B, C...
+                    participants: [], // Participant IDs
+                    matches: [],
+                    standings: []
+                }));
+
+                for (let i = 0; i < sortedParticipants.length; i++) {
+                    const groupIndex = i % groupsCount;
+                    newGroups[groupIndex].participants.push(sortedParticipants[i].id);
+                }
+
+                if (stageId) {
+                    const stage = tournament.stages.find(s => s.id === stageId);
+                    stage.groups = newGroups;
+                    groupsArray = stage.groups; // Update local reference
+                } else {
+                    tournament.groups = newGroups;
+                    groupsArray = tournament.groups; // Update local reference
+                }
+
+                // 2. Schedule matches (round robin inside each group)
+                groupsArray.forEach(group => {
+                    group.matches = generateRoundRobinMatches(tournament, stageId, group); // Pass group object and stageId
+                });
+
+                saveData();
+                showAlert('Group Stage generated successfully!');
+            }
+
+            if (groupsArray.length === 0) {
+                groupsDisplayDiv.innerHTML = '<p class="no-data">Groups not generated. Add teams and click "Generate Groups".</p>';
+                return;
+            }
+
+            groupsArray.forEach(group => {
+                const groupCard = document.createElement('div');
+                groupCard.className = 'group-card';
+                groupCard.innerHTML = `
+                    <h4>${group.name}</h4>
+                    <p>Teams: ${group.participants.length}</p>
+                    <div class="group-content">
+                        <h5>Matches</h5>
+                        <div id="groupMatches_${group.id}"></div>
+                        <h5 style="margin-top: 20px;">Team Standings</h5>
+                        <div id="groupStandings_${group.id}"></div>
+                    </div>
+                `;
+                groupsDisplayDiv.appendChild(groupCard);
+
+                const groupParticipants = tournament.participants.filter(p => group.participants.includes(p.id));
+                renderRoundRobinMatches(tournament, `groupMatches_${group.id}`, group.matches, groupParticipants, groupStageSettings, stageId, group.id);
+                group.standings = renderRoundRobinStandings(tournament, `groupStandings_${group.id}`, group.matches, groupParticipants, groupStageSettings);
+            });
+
+            // Determine qualifiers (optional, can be done after all matches are played)
+            const qualifiers = [];
+            groupsArray.forEach(group => {
+                const topK = group.standings.slice(0, advanceK);
+                qualifiers.push(...topK.map(p => p.name));
+            });
+            if (qualifiers.length > 0) {
+                groupsDisplayDiv.insertAdjacentHTML('beforeend', `<h3 style="margin-top: 30px;">Qualifiers for Next Stage:</h3><p>${qualifiers.join(', ')}</p>`);
+            }
+            updateAggregatedPlayerStats(tournament); // Update player stats after group stage generation
+        }
+
+        // NEW: Function to generate groups for Multi-Stage tournament's Group Stage
+        function generateMultiStageGroups(tournament, stageId) {
+            const stage = tournament.stages.find(s => s.id === stageId);
+            if (!stage || stage.type !== TOURNAMENT_TYPES.GROUP_STAGE) {
+                showAlert('Invalid stage for group generation.', 'error');
+                return;
+            }
+            // Ensure all tournament participants are in this stage
+            stage.participants = tournament.participants.map(p => p.id);
+            generateGroupStage(tournament, `stageGroupsDisplay_${stage.id}`, stage.groups, stage.settings, stage.id);
+            saveData();
+            renderMultiStages(tournament);
+        }
+
+        // NEW: Function to advance qualifiers from Group Stage to Knockout Stage
+        function advanceQualifiersToKnockout(tournament, groupStageId) {
+            const groupStage = tournament.stages.find(s => s.id === groupStageId);
+            const knockoutStage = tournament.stages.find(s => s.name === 'Knockout Stage' && s.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION);
+
+            if (!groupStage || !knockoutStage) {
+                showAlert('Group Stage or Knockout Stage not found for advancement.', 'error');
+                return;
+            }
+
+            if (groupStage.groups.length === 0) {
+                showAlert('Group Stage has not been generated yet. Please generate groups first.', 'error');
+                return;
+            }
+
+            // Check if all group matches are completed
+            const allMatchesCompleted = groupStage.groups.every(group =>
+                group.matches.every(match => match.status === 'Completed')
+            );
+
+            if (!allMatchesCompleted) {
+                if (!confirm('Not all group stage matches are completed. Advancing qualifiers now might lead to an unfair bracket. Continue anyway?')) {
+                    return;
+                }
+            }
+
+            const qualifiers = [];
+            groupStage.groups.forEach(group => {
+                // Ensure standings are up-to-date before getting qualifiers
+                const groupParticipants = tournament.participants.filter(p => group.participants.includes(p.id));
+                const currentStandings = renderRoundRobinStandings(tournament, null, group.matches, groupParticipants, groupStage.settings);
+                const topK = currentStandings.slice(0, groupStage.settings.advanceK);
+                qualifiers.push(...topK.map(p => p.id));
+            });
+
+            if (qualifiers.length < 2) {
+                showAlert('Not enough qualifiers to form a knockout bracket (need at least 2).', 'error');
+                return;
+            }
+
+            knockoutStage.participants = qualifiers;
+            generateEliminationBracket(tournament, TOURNAMENT_TYPES.SINGLE_ELIMINATION, knockoutStage.id);
+            saveData();
+            showAlert(`${qualifiers.length} teams advanced to Knockout Stage!`);
+            renderMultiStages(tournament);
+        }
+
 
         // --- Multi-Stage Management ---
         function renderMultiStages(tournament) {
             const stagesListDiv = document.getElementById('stagesList');
             stagesListDiv.innerHTML = '';
+            const manageStagesActionsDiv = document.getElementById('manageStagesActions');
+            manageStagesActionsDiv.innerHTML = ''; // Clear generic buttons
 
             if (tournament.stages.length === 0) {
-                stagesListDiv.innerHTML = '<p class="no-data">No stages defined. Click "Manage Stages" to add them.</p>';
+                stagesListDiv.innerHTML = '<p class="no-data">No stages defined. This tournament type expects predefined stages. Please edit tournament settings or recreate.</p>';
                 return;
             }
 
@@ -3351,16 +4040,14 @@
                     <div class="flex-between">
                         <h4>${stage.name} (${stage.type})</h4>
                         <div class="btn-group">
-                            <button class="btn btn-secondary btn-sm" onclick="editStage('${stage.id}')">Edit Stage</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteStage('${stage.id}')">Delete Stage</button>
-                            <button class="btn btn-outline btn-sm" onclick="openAdvanceParticipantsModal('${stage.id}')">Add Participants</button>
-                            ${stage.type === TOURNAMENT_TYPES.ROUND_ROBIN ?
-                                `<button class="btn btn-primary btn-sm" onclick="generateRoundRobinMatches(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Generate Matches</button>` :
+                            ${stage.type === TOURNAMENT_TYPES.GROUP_STAGE ?
+                                `<button class="btn btn-primary btn-sm" onclick="generateMultiStageGroups(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Generate Groups</button>
+                                <button class="btn btn-secondary btn-sm" onclick="advanceQualifiersToKnockout(tournaments.find(t => t.id === currentTournamentId), '${stage.id}')">Advance Qualifiers</button>` :
                                 `<button class="btn btn-primary btn-sm" onclick="generateEliminationBracket(tournaments.find(t => t.id === currentTournamentId), '${TOURNAMENT_TYPES.SINGLE_ELIMINATION}', '${stage.id}')">Generate Bracket</button>`
                             }
                         </div>
                     </div>
-                    <p>Participants: ${stage.participants.length} / ${tournament.participants.length}</p>
+                    <p>Teams: ${stage.participants.length} / ${tournament.participants.length}</p>
                     <div class="stage-content" id="stageContent_${stage.id}">
                         <!-- Stage specific content will be rendered here -->
                     </div>
@@ -3386,12 +4073,28 @@
                     bracketDiv.id = `stageBracket_${stage.id}`;
                     stageContentDiv.appendChild(bracketDiv);
                     renderBracket(tournament, `stageBracket_${stage.id}`, stage.rounds, stage.id);
+                } else if (stage.type === TOURNAMENT_TYPES.GROUP_STAGE) {
+                    const groupsDisplayDiv = document.createElement('div');
+                    groupsDisplayDiv.id = `stageGroupsDisplay_${stage.id}`;
+                    stageContentDiv.appendChild(groupsDisplayDiv);
+                    generateGroupStage(tournament, `stageGroupsDisplay_${stage.id}`, stage.groups, stage.settings, stage.id);
                 }
             });
         }
 
         function openManageStagesModal() {
-            renderCurrentStagesList();
+            const tournament = tournaments.find(t => t.id === currentTournamentId);
+            if (tournament.type === TOURNAMENT_TYPES.MULTI_STAGE) {
+                // For Multi-Stage, stages are predefined, so we just render them
+                renderMultiStages(tournament);
+                // Hide generic add/delete buttons
+                document.getElementById('manageStagesActions').innerHTML = '';
+            } else {
+                // For other types, allow generic stage management
+                renderCurrentStagesList();
+                document.getElementById('manageStagesActions').innerHTML = '<button id="addStageBtn" class="btn btn-primary">Add New Stage</button>';
+                document.getElementById('addStageBtn').onclick = openAddStageModal;
+            }
             openModal('manageStagesModal');
         }
 
@@ -3410,7 +4113,7 @@
                 item.innerHTML = `
                     <div>
                         <strong>${stage.name}</strong> (${stage.type})
-                        <br><small>Participants: ${stage.participants.length}</small>
+                        <br><small>Teams: ${stage.participants.length}</small>
                     </div>
                     <div class="actions">
                         <button class="btn btn-secondary" onclick="editStage('${stage.id}')">Edit</button>
@@ -3427,6 +4130,7 @@
             document.getElementById('stageId').value = '';
             document.getElementById('stageEliminationSettings').classList.add('hidden');
             document.getElementById('stageRoundRobinSettings').classList.add('hidden');
+            document.getElementById('stageGroupStageSettings').classList.add('hidden'); // NEW
             openModal('stageModal');
         }
 
@@ -3457,6 +4161,13 @@
                 stageSettings.pointsDraw = parseInt(document.getElementById('stageRrPointsDraw').value) || 1;
                 stageSettings.pointsLoss = parseInt(document.getElementById('stageRrPointsLoss').value) || 0;
                 stageSettings.tieBreaker = document.getElementById('stageRrTieBreaker').value || 'Points';
+            } else if (type === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+                stageSettings.groupsCount = parseInt(document.getElementById('stageGroupStageGroupsCount').value) || 1;
+                stageSettings.advanceK = parseInt(document.getElementById('stageGroupStageAdvanceK').value) || 1;
+                stageSettings.pointsWin = parseInt(document.getElementById('stageGroupStagePointsWin').value) || 3;
+                stageSettings.pointsDraw = parseInt(document.getElementById('stageGroupStagePointsDraw').value) || 1;
+                stageSettings.pointsLoss = parseInt(document.getElementById('stageGroupStagePointsLoss').value) || 0;
+                stageSettings.tieBreaker = document.getElementById('stageGroupStageTieBreaker').value || 'Points';
             }
 
             if (stageId) {
@@ -3471,9 +4182,10 @@
                 const newStage = {
                     id: generateUniqueId(),
                     name, type,
-                    participants: [], // Participants for this specific stage
+                    participants: [], // Teams for this specific stage
                     matches: [], // For RR
                     rounds: [], // For SE
+                    groups: [], // For Group Stage
                     settings: stageSettings
                 };
                 tournament.stages.push(newStage);
@@ -3498,6 +4210,7 @@
 
             document.getElementById('stageEliminationSettings').classList.add('hidden');
             document.getElementById('stageRoundRobinSettings').classList.add('hidden');
+            document.getElementById('stageGroupStageSettings').classList.add('hidden');
 
             if (stage.type === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
                 document.getElementById('stageEliminationSettings').classList.remove('hidden');
@@ -3509,6 +4222,14 @@
                 document.getElementById('stageRrPointsDraw').value = stage.settings.pointsDraw;
                 document.getElementById('stageRrPointsLoss').value = stage.settings.pointsLoss;
                 document.getElementById('stageRrTieBreaker').value = stage.settings.tieBreaker;
+            } else if (stage.type === TOURNAMENT_TYPES.GROUP_STAGE) {
+                document.getElementById('stageGroupStageSettings').classList.remove('hidden');
+                document.getElementById('stageGroupStageGroupsCount').value = stage.settings.groupsCount || 1;
+                document.getElementById('stageGroupStageAdvanceK').value = stage.settings.advanceK || 1;
+                document.getElementById('stageGroupStagePointsWin').value = stage.settings.pointsWin || 3;
+                document.getElementById('stageGroupStagePointsDraw').value = stage.settings.pointsDraw || 1;
+                document.getElementById('stageGroupStagePointsLoss').value = stage.settings.pointsLoss || 0;
+                document.getElementById('stageGroupStageTieBreaker').value = stage.settings.tieBreaker || 'Points';
             }
 
             openModal('stageModal');
@@ -3525,6 +4246,8 @@
                 showAlert('Stage deleted successfully!', 'danger');
                 renderMultiStages(tournament);
                 renderCurrentStagesList();
+                updateAggregatedPlayerStats(tournament); // Re-aggregate all stats
+                renderPlayerLeaderboards(tournament);
             }
         }
 
@@ -3560,128 +4283,94 @@
                                                 .map(cb => cb.value);
 
             stage.participants = selectedParticipantIds;
-            // Reset matches/rounds for the stage if participants change
+            // Reset matches/rounds/groups for the stage if participants change
             stage.matches = [];
             stage.rounds = [];
+            stage.groups = [];
 
             saveData();
-            showAlert('Participants updated for stage successfully!');
+            showAlert('Teams updated for stage successfully!');
             renderMultiStages(tournament);
             renderCurrentStagesList();
             closeModal('advanceParticipantsModal');
-        }
-
-        // --- NEW: Group Stage Logic ---
-        function generateGroupStage(tournament) {
-            const participants = tournament.participants;
-            const groupsCount = tournament.settings.groupStage.groupsCount;
-            const advanceK = tournament.settings.groupStage.advanceK;
-
-            if (participants.length < groupsCount * 2) { // At least 2 participants per group
-                showAlert(`Not enough participants (${participants.length}) for ${groupsCount} groups. Need at least ${groupsCount * 2}.`, 'error');
-                return;
-            }
-            if (advanceK > participants.length / groupsCount) {
-                showAlert(`Cannot advance ${advanceK} teams per group. Max is ${Math.floor(participants.length / groupsCount)}.`, 'error');
-                return;
-            }
-
-            if (tournament.groups.length > 0 && !confirm('Groups already generated. Regenerating will clear all matches and standings. Continue?')) {
-                return;
-            }
-
-            tournament.groups = []; // Clear existing groups
-
-            // 1. Split into groups (serpentine seeding)
-            const sortedParticipants = [...participants].sort((a, b) => (a.seed || Infinity) - (b.seed || Infinity));
-            const groups = Array.from({ length: groupsCount }, (_, i) => ({
-                id: generateUniqueId(),
-                name: `Group ${String.fromCharCode(65 + i)}`, // A, B, C...
-                participants: [], // Participant IDs
-                matches: [],
-                standings: []
-            }));
-
-            for (let i = 0; i < sortedParticipants.length; i++) {
-                const groupIndex = i % groupsCount;
-                groups[groupIndex].participants.push(sortedParticipants[i].id);
-            }
-            tournament.groups = groups;
-
-            // 2. Schedule matches (round robin inside each group)
-            tournament.groups.forEach(group => {
-                group.matches = generateRoundRobinMatches(tournament, null, group); // Pass group object
-            });
-
-            // 3. Initialize standings (will be updated on score record)
-            tournament.groups.forEach(group => {
-                group.standings = renderRoundRobinStandings(tournament, null, group.matches, tournament.participants.filter(p => group.participants.includes(p.id)), tournament.settings.groupStage);
-            });
-
-            saveData();
-            showAlert('Group Stage generated successfully!');
-            renderGroupStage(tournament);
+            updateAggregatedPlayerStats(tournament); // Re-aggregate all stats
             renderPlayerLeaderboards(tournament);
         }
 
-        function renderGroupStage(tournament) {
-            const groupsDisplayDiv = document.getElementById('groupsDisplay');
-            groupsDisplayDiv.innerHTML = '';
-
-            if (tournament.groups.length === 0) {
-                groupsDisplayDiv.innerHTML = '<p class="no-data">Groups not generated. Add participants and click "Generate Groups".</p>';
-                return;
-            }
-
-            tournament.groups.forEach(group => {
-                const groupCard = document.createElement('div');
-                groupCard.className = 'group-card';
-                groupCard.innerHTML = `
-                    <h4>${group.name}</h4>
-                    <p>Participants: ${group.participants.length}</p>
-                    <div class="group-content">
-                        <h5>Matches</h5>
-                        <div id="groupMatches_${group.id}"></div>
-                        <h5 style="margin-top: 20px;">Standings</h5>
-                        <div id="groupStandings_${group.id}"></div>
-                    </div>
-                `;
-                groupsDisplayDiv.appendChild(groupCard);
-
-                const groupParticipants = tournament.participants.filter(p => group.participants.includes(p.id));
-                renderRoundRobinMatches(tournament, `groupMatches_${group.id}`, group.matches, groupParticipants, tournament.settings.groupStage, null, group.id);
-                group.standings = renderRoundRobinStandings(tournament, `groupStandings_${group.id}`, group.matches, groupParticipants, tournament.settings.groupStage);
-            });
-
-            // Determine qualifiers (optional, can be done after all matches are played)
-            const qualifiers = [];
-            tournament.groups.forEach(group => {
-                const topK = group.standings.slice(0, tournament.settings.groupStage.advanceK);
-                qualifiers.push(...topK.map(p => p.name));
-            });
-            if (qualifiers.length > 0) {
-                groupsDisplayDiv.insertAdjacentHTML('beforeend', `<h3 style="margin-top: 30px;">Qualifiers for Next Stage:</h3><p>${qualifiers.join(', ')}</p>`);
-            }
-        }
 
         // --- NEW: Player Stats Management ---
-        function updateAggregatedPlayerStats(tournament, match, participantsInScope) {
-            const p1 = participantsInScope.find(p => p.id === match.player1Id);
-            const p2 = participantsInScope.find(p => p.id === match.player2Id);
+        function updateAggregatedPlayerStats(tournament) {
+            // Reset all player and team stats first
+            tournament.participants.forEach(team => {
+                // Reset team-level stats
+                team.teamStats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
+                tournament.settings.playerStatsFields.forEach(field => team.teamStats[field] = 0);
 
-            if (!p1 || !p2) return; // Skip if BYE or participant not found
-
-            // Reset stats for this match to avoid double counting if re-recorded
-            // This is a simplified approach; a more robust system would track match-specific stats separately
-            // and re-aggregate all matches. For now, we'll just update.
-
-            p1.stats.matchesPlayed = (p1.stats.matchesPlayed || 0) + 1;
-            p2.stats.matchesPlayed = (p2.stats.matchesPlayed || 0) + 1;
-
-            tournament.settings.playerStatsFields.forEach(field => {
-                p1.stats[field] = (p1.stats[field] || 0) + (match.player1Stats[field] || 0);
-                p2.stats[field] = (p2.stats[field] || 0) + (match.player2Stats[field] || 0);
+                // Reset individual player stats
+                team.players.forEach(player => {
+                    player.stats = { matchesPlayed: 0, goals: 0, assists: 0, saves: 0, cardsYellow: 0, cardsRed: 0, minutesPlayed: 0, kills: 0, deaths: 0, damage: 0, custom: {} };
+                    tournament.settings.playerStatsFields.forEach(field => player.stats[field] = 0);
+                });
             });
+
+            // Helper to process matches from any bracket/list
+            const processMatches = (matches, participantsInScope) => {
+                matches.forEach(match => {
+                    if (match.status === 'Completed') {
+                        const team1 = participantsInScope.find(p => p.id === match.player1Id);
+                        const team2 = participantsInScope.find(p => p.id === match.player2Id);
+
+                        if (!team1 || !team2) return; // Skip if teams not found (e.g., BYE)
+
+                        // Aggregate team-level stats
+                        team1.teamStats.matchesPlayed = (team1.teamStats.matchesPlayed || 0) + 1;
+                        team2.teamStats.matchesPlayed = (team2.teamStats.matchesPlayed || 0) + 1;
+
+                        // Aggregate individual player stats for Team 1
+                        match.team1MatchPlayerStats.forEach(matchPlayerStat => {
+                            const player = team1.players.find(p => p.id === matchPlayerStat.playerId);
+                            if (player) {
+                                player.stats.matchesPlayed = (player.stats.matchesPlayed || 0) + 1;
+                                tournament.settings.playerStatsFields.forEach(field => {
+                                    player.stats[field] = (player.stats[field] || 0) + (matchPlayerStat[field] || 0);
+                                    team1.teamStats[field] = (team1.teamStats[field] || 0) + (matchPlayerStat[field] || 0); // Also aggregate to team total
+                                });
+                            }
+                        });
+
+                        // Aggregate individual player stats for Team 2
+                        match.team2MatchPlayerStats.forEach(matchPlayerStat => {
+                            const player = team2.players.find(p => p.id === matchPlayerStat.playerId);
+                            if (player) {
+                                player.stats.matchesPlayed = (player.stats.matchesPlayed || 0) + 1;
+                                tournament.settings.playerStatsFields.forEach(field => {
+                                    player.stats[field] = (player.stats[field] || 0) + (matchPlayerStat[field] || 0);
+                                    team2.teamStats[field] = (team2.teamStats[field] || 0) + (matchPlayerStat[field] || 0); // Also aggregate to team total
+                                });
+                            }
+                        });
+                    }
+                });
+            };
+
+            // Process matches from main tournament brackets/lists
+            if (tournament.rounds) tournament.rounds.forEach(r => processMatches(r.matches, tournament.participants));
+            if (tournament.winnerBracket) tournament.winnerBracket.forEach(r => processMatches(r.matches, tournament.participants));
+            if (tournament.loserBracket) tournament.loserBracket.forEach(r => processMatches(r.matches, tournament.participants));
+            if (tournament.grandFinal) tournament.grandFinal.forEach(r => processMatches(r.matches, tournament.participants));
+            if (tournament.matches) processMatches(tournament.matches, tournament.participants);
+            if (tournament.groups) tournament.groups.forEach(g => processMatches(g.matches, tournament.participants.filter(p => g.participants.includes(p.id))));
+
+            // Process matches from stages
+            if (tournament.stages) {
+                tournament.stages.forEach(stage => {
+                    const stageParticipants = tournament.participants.filter(p => stage.participants.includes(p.id));
+                    if (stage.matches) processMatches(stage.matches, stageParticipants);
+                    if (stage.rounds) stage.rounds.forEach(r => processMatches(r.matches, stageParticipants));
+                    if (stage.groups) stage.groups.forEach(g => processMatches(g.matches, tournament.participants.filter(p => g.participants.includes(p.id))));
+                });
+            }
+            saveData(); // Save updated aggregated stats
         }
 
         function renderPlayerLeaderboards(tournament) {
@@ -3689,12 +4378,25 @@
             leaderboardsDiv.innerHTML = '';
 
             if (tournament.participants.length === 0) {
-                leaderboardsDiv.innerHTML = '<p class="no-data">No participants to display leaderboards.</p>';
+                leaderboardsDiv.innerHTML = '<p class="no-data">No teams to display player leaderboards.</p>';
                 return;
             }
 
             if (tournament.settings.playerStatsFields.length === 0) {
                 leaderboardsDiv.innerHTML = '<p class="no-data">No custom player stats fields defined for this tournament.</p>';
+                return;
+            }
+
+            // Collect all players from all teams
+            const allPlayers = [];
+            tournament.participants.forEach(team => {
+                team.players.forEach(player => {
+                    allPlayers.push({ ...player, teamName: team.name }); // Add team name for display
+                });
+            });
+
+            if (allPlayers.length === 0) {
+                leaderboardsDiv.innerHTML = '<p class="no-data">No players registered across all teams.</p>';
                 return;
             }
 
@@ -3707,6 +4409,7 @@
                         <tr>
                             <th>Rank</th>
                             <th>Player</th>
+                            <th>Team</th>
                             <th>${fieldName}</th>
                             <th>Matches Played</th>
                         </tr>
@@ -3715,18 +4418,18 @@
                 `;
                 const tbody = leaderboardTable.querySelector('tbody');
 
-                const sortedPlayers = [...tournament.participants].sort((a, b) => {
+                const sortedPlayers = [...allPlayers].sort((a, b) => {
                     const statA = a.stats[field] || 0;
                     const statB = b.stats[field] || 0;
                     return statB - statA; // Descending order
                 });
 
                 sortedPlayers.forEach((player, index) => {
-                    if (player.id === 'BYE') return; // Skip BYE placeholder
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td class="rank">${index + 1}</td>
                         <td>${player.name}</td>
+                        <td>${player.teamName}</td>
                         <td>${player.stats[field] || 0}</td>
                         <td>${player.stats.matchesPlayed || 0}</td>
                     `;
@@ -3787,6 +4490,7 @@
                     }
 
                     saveData();
+                    loadData(); // Reload to ensure new fields are initialized for imported data
                     renderTournamentList();
                     showSection('dashboardSection');
                     document.getElementById('importFileInput').value = ''; // Clear file input
@@ -3836,7 +4540,8 @@
                 // Reset specific settings visibility
                 document.getElementById('eliminationSettings').classList.add('hidden');
                 document.getElementById('roundRobinSettings').classList.add('hidden');
-                document.getElementById('groupStageSettings').classList.add('hidden'); // NEW
+                document.getElementById('groupStageSettings').classList.add('hidden');
+                document.getElementById('multiStageSettings').classList.add('hidden'); // NEW
                 document.getElementById('swissSettings').classList.add('hidden');
                 document.getElementById('gslSettings').classList.add('hidden');
                 document.getElementById('ladderSettings').classList.add('hidden');
@@ -3854,7 +4559,8 @@
                 // Hide all specific settings first
                 document.getElementById('eliminationSettings').classList.add('hidden');
                 document.getElementById('roundRobinSettings').classList.add('hidden');
-                document.getElementById('groupStageSettings').classList.add('hidden'); // NEW
+                document.getElementById('groupStageSettings').classList.add('hidden');
+                document.getElementById('multiStageSettings').classList.add('hidden'); // NEW
                 document.getElementById('swissSettings').classList.add('hidden');
                 document.getElementById('gslSettings').classList.add('hidden');
                 document.getElementById('ladderSettings').classList.add('hidden');
@@ -3864,8 +4570,10 @@
                     document.getElementById('eliminationSettings').classList.remove('hidden');
                 } else if (e.target.value === TOURNAMENT_TYPES.ROUND_ROBIN) {
                     document.getElementById('roundRobinSettings').classList.remove('hidden');
-                } else if (e.target.value === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
+                } else if (e.target.value === TOURNAMENT_TYPES.GROUP_STAGE) {
                     document.getElementById('groupStageSettings').classList.remove('hidden');
+                } else if (e.target.value === TOURNAMENT_TYPES.MULTI_STAGE) { // NEW
+                    document.getElementById('multiStageSettings').classList.remove('hidden');
                 } else if (e.target.value === TOURNAMENT_TYPES.SWISS_SYSTEM) {
                     document.getElementById('swissSettings').classList.remove('hidden');
                 } else if (e.target.value === TOURNAMENT_TYPES.GSL_FORMAT) {
@@ -3885,39 +4593,29 @@
 
             // Edit Tournament Modal Form
             document.getElementById('editTournamentForm').addEventListener('submit', saveEditedTournament);
-            document.getElementById('editTournamentType').addEventListener('change', (e) => {
-                // Hide all specific settings first
-                document.getElementById('editEliminationSettings').classList.add('hidden');
-                document.getElementById('editRoundRobinSettings').classList.add('hidden');
-                document.getElementById('editGroupStageSettings').classList.add('hidden'); // NEW
-                document.getElementById('editSwissSettings').classList.add('hidden');
-                document.getElementById('editGslSettings').classList.add('hidden');
-                document.getElementById('editLadderSettings').classList.add('hidden');
-
-                // Show relevant settings based on type
-                if (e.target.value === TOURNAMENT_TYPES.SINGLE_ELIMINATION || e.target.value === TOURNAMENT_TYPES.DOUBLE_ELIMINATION) {
-                    document.getElementById('editEliminationSettings').classList.remove('hidden');
-                } else if (e.target.value === TOURNAMENT_TYPES.ROUND_ROBIN) {
-                    document.getElementById('editRoundRobinSettings').classList.remove('hidden');
-                } else if (e.target.value === TOURNAMENT_TYPES.GROUP_STAGE) { // NEW
-                    document.getElementById('editGroupStageSettings').classList.remove('hidden');
-                } else if (e.target.value === TOURNAMENT_TYPES.SWISS_SYSTEM) {
-                    document.getElementById('editSwissSettings').classList.remove('hidden');
-                } else if (e.target.value === TOURNAMENT_TYPES.GSL_FORMAT) {
-                    document.getElementById('editGslSettings').classList.remove('hidden');
-                } else if (e.target.value === TOURNAMENT_TYPES.LADDER) {
-                    document.getElementById('editLadderSettings').classList.remove('hidden');
-                }
-            });
+            // The editTournamentType change listener is not needed as type is disabled for editing.
+            // The logic for showing/hiding settings is handled by editTournamentDetails based on current type.
 
 
-            // Participant Management
+            // Participant (Team) Management
             document.getElementById('addParticipantBtn').addEventListener('click', openAddParticipantModal);
             document.getElementById('participantForm').addEventListener('submit', addOrUpdateParticipant);
             document.getElementById('bulkImportParticipantsBtn').addEventListener('click', openBulkImportModal);
             document.getElementById('processBulkImportBtn').addEventListener('click', processBulkImport);
             document.getElementById('copyParticipantsBtn').addEventListener('click', openCopyParticipantsModal);
             document.getElementById('processCopyParticipantsBtn').addEventListener('click', processCopyParticipants);
+
+            // Player Management within a Team
+            document.getElementById('managePlayersBtnForTeam').addEventListener('click', () => {
+                const teamId = document.getElementById('participantId').value;
+                if (teamId) {
+                    openManagePlayersModal(teamId);
+                } else {
+                    showAlert('Please save the team first before managing players.', 'info');
+                }
+            });
+            document.getElementById('addPlayerBtn').addEventListener('click', openAddPlayerModal);
+            document.getElementById('addEditPlayerForm').addEventListener('submit', addOrUpdatePlayer);
 
 
             // Bracket/Match Generation
@@ -3933,7 +4631,7 @@
                 const tournament = tournaments.find(t => t.id === currentTournamentId);
                 if (tournament) generateRoundRobinMatches(tournament);
             });
-            document.getElementById('generateGroupStageBtn').addEventListener('click', () => { // NEW
+            document.getElementById('generateGroupStageBtn').addEventListener('click', () => {
                 const tournament = tournaments.find(t => t.id === currentTournamentId);
                 if (tournament) generateGroupStage(tournament);
             });
@@ -3945,15 +4643,17 @@
 
             // Multi-Stage Management
             document.getElementById('manageStagesBtn').addEventListener('click', openManageStagesModal);
-            document.getElementById('addStageBtn').addEventListener('click', openAddStageModal);
-            document.getElementById('stageForm').addEventListener('submit', addOrUpdateStage);
+            // The addStageBtn and stageForm listeners are now dynamically attached/detached based on tournament type in openManageStagesModal
             document.getElementById('stageType').addEventListener('change', (e) => {
                 document.getElementById('stageEliminationSettings').classList.add('hidden');
                 document.getElementById('stageRoundRobinSettings').classList.add('hidden');
+                document.getElementById('stageGroupStageSettings').classList.add('hidden');
                 if (e.target.value === TOURNAMENT_TYPES.SINGLE_ELIMINATION) {
                     document.getElementById('stageEliminationSettings').classList.remove('hidden');
                 } else if (e.target.value === TOURNAMENT_TYPES.ROUND_ROBIN) {
                     document.getElementById('stageRoundRobinSettings').classList.remove('hidden');
+                } else if (e.target.value === TOURNAMENT_TYPES.GROUP_STAGE) {
+                    document.getElementById('stageGroupStageSettings').classList.remove('hidden');
                 }
             });
             document.getElementById('processAdvanceParticipantsBtn').addEventListener('click', processAdvanceParticipants);
@@ -3976,6 +4676,7 @@
 </body>
 </html>
 
--------------------------------------------------------------------------------------------------
 
-Any kind of tournament will have random scheduling, and in case of the round-robin scheduling, you can use random scheduling plus circular scheduling so that home and away matches are played properly. Please understand this that the multi-stage tournaments will have two stages predefined. First one will be group stage where various groups will be created just as the format group stage is working right now and after group stage there will come the knockout stage under which the promoting or the qualifying members from the group stage will play matches against each other and in case of the group stage randomization will be there, scheduling will be there for their specific things and in case of all the types of tournaments there will be team leaderboards and player leaderboards separately because the participants of all the tournaments are teams not players. Teams play against each other and there will be a section for player stats where player related stats will be stored there and could be edited, managed anytime, modified anytime the user wants. You can call the team leaderboards as standings. Just like as it is done right now.I want the player leaderboards to be editable, modifiable even after the tournament is started so that we can add player names, add new players or edit the existing player's stats while the creation of the tournament which stats to record for each player in player stats will be customized by the user the fields will be created by the user as per the user's choice. In each match's details, there will be fields for the player names and their statistics to be added up as per the user specified, and that will reflect on the player's statistics or player leaderboards.
+-----------------------------------------------------------------------------------------------------------------
+
+Check if the schedules are properly randomized or not. And follow the round-robin rules or not.In case of multi-stage tournament, or knockout stages, anywhere in the tournament types, within any tournament type, if there is knockout stage, then that will be auto-generated, and the brackets will be auto-generated, and from the previous stage, like in case of multi-stage tournament, the qualifying teams from the group stage will be placed into the brackets of knockout stages automatically, so there won't be any button like generate brackets, it will be auto-generated by itself after the completion of all the group stage matches. Also, I'm unable to add any player stats in case of multistage tournament. Know what? Can you just fix player stats updation completely and look for bugs? Why this function is not working properly or not? Yeah, I want you to look at all the bugs and glitches in this website and fix them all. And make it fully functional so that whatever I wanted to achieve with this website are achieved in truth. Thank you.
